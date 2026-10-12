@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>図形のれんしゅう</title>
+<title>重ねる折る数える</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
@@ -43,6 +43,14 @@ svg{touch-action:manipulation}
 .ctrl-lab{font-weight:700;color:var(--sub)}
 .tool .anim-svg{max-width:280px;margin:0 auto;display:block}
 .drag-on{cursor:grab}
+.intro-card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:20px 24px;display:grid;gap:16px;max-width:820px;margin:0 auto}
+.intro-fig{display:flex;justify-content:center}
+.intro-fig svg{width:100%;max-width:280px;height:auto}
+.intro-list{font-size:20px;line-height:2.3;margin:0;padding-left:1.6em;display:grid;gap:4px}
+.intro-btns{display:flex;justify-content:center}
+#intro-go{min-width:220px;min-height:60px;font-size:24px}
+.set-h3{font-size:18px;margin:18px 0 0;color:var(--accent)}
+.set-note{margin:8px 0 0;font-size:15px;color:var(--sub);line-height:2}
 .mode-card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-align:center;transition:transform .1s,border-color .15s}
 .mode-card:active{transform:scale(.98);border-color:var(--accent)}
 .mode-card svg{width:100%;max-width:210px;height:auto}
@@ -141,7 +149,7 @@ svg{touch-action:manipulation}
 <div id="app">
   <section id="scr-start" class="screen">
     <header class="topbar">
-      <h1 data-r>図形{ずけい}の れんしゅう</h1>
+      <h1 data-r>重{かさ}ねる 折{お}る 数{かぞ}える</h1>
       <button id="btn-gear" class="icon-btn" type="button" aria-label="せってい">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#566476" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
       </button>
@@ -181,15 +189,15 @@ svg{touch-action:manipulation}
       </button>
       <button class="mode-card" type="button" data-mode="count">
         <svg viewBox="0 0 130 64" aria-hidden="true">
-          <path d="M34 5 L6 59 L62 59 Z" fill="#e4eefc" stroke="#1e2836" stroke-width="2.5" stroke-linejoin="round"/>
-          <line x1="34" y1="5" x2="26" y2="59" stroke="#1e2836" stroke-width="2.5"/>
-          <line x1="34" y1="5" x2="44" y2="59" stroke="#1e2836" stroke-width="2.5"/>
-          <rect x="78" y="10" width="22" height="22" fill="#d9e0ea"/><path d="M78 10 L78 32 L100 32 Z" fill="#2c3d58"/>
-          <rect x="100" y="10" width="22" height="22" fill="#d9e0ea"/><path d="M100 32 L122 32 L122 10 Z" fill="#2c3d58"/>
-          <rect x="78" y="32" width="22" height="22" fill="#d9e0ea"/><path d="M78 32 L100 32 L100 54 Z" fill="#2c3d58"/>
+          <path d="M36 5 L6 59 L66 59 Z" fill="#e4eefc" stroke="#1e2836" stroke-width="2.5" stroke-linejoin="round"/>
+          <line x1="36" y1="5" x2="26" y2="59" stroke="#1e2836" stroke-width="2.5"/>
+          <line x1="36" y1="5" x2="46" y2="59" stroke="#1e2836" stroke-width="2.5"/>
+          <rect x="78" y="7" width="48" height="48" fill="#e4eefc" stroke="#1e2836" stroke-width="2.5"/>
+          <line x1="78" y1="7" x2="126" y2="55" stroke="#1e2836" stroke-width="2.5"/>
+          <line x1="126" y1="7" x2="78" y2="55" stroke="#1e2836" stroke-width="2.5"/>
         </svg>
         <span class="mode-name">かぞえる</span>
-        <span class="mode-desc" data-r>三角形{さんかくけい}や カードの 数{かず}</span>
+        <span class="mode-desc" data-r>三角形{さんかくけい}の 数{かず}</span>
       </button>
       <button class="mode-card" type="button" data-mode="mix">
         <svg viewBox="0 0 130 64" aria-hidden="true">
@@ -207,6 +215,18 @@ svg{touch-action:manipulation}
       </button>
     </div>
     <p class="cfg-sum" id="cfg-sum"></p>
+  </section>
+
+  <section id="scr-intro" class="screen" hidden>
+    <header class="topbar">
+      <button id="intro-back" class="pill-btn" type="button">もどる</button>
+      <div class="q-title" id="intro-title"></div>
+    </header>
+    <div class="intro-card">
+      <div class="intro-fig" id="intro-fig"></div>
+      <ol class="intro-list" id="intro-list"></ol>
+      <div class="intro-btns"><button id="intro-go" class="btn btn-primary" type="button">はじめる</button></div>
+    </div>
   </section>
 
   <section id="scr-q" class="screen" hidden>
@@ -318,13 +338,32 @@ const sideOf = (p, f) => crs(f.d, sub(p, f.o));
 function reflectP(p, f) { const v = sub(p, f.o); const a = dot(v, f.d); return [f.o[0] + 2 * a * f.d[0] - v[0], f.o[1] + 2 * a * f.d[1] - v[1]]; }
 
 /* ===== 設定 ===== */
-const DEF = { level: 1, count: 5, sound: true, ctype: 'both', cans: 'choice' };
+// レベルごとの きまり（こまかい設定の 初期値）
+const PRESET = {
+  1: { ovN: 2, ovOp: 'id', orFold: '1', orCut: '1', triR: 1, triGap: 'no' },
+  2: { ovN: 3, ovOp: 'id', orFold: '2', orCut: 'mix', triR: 2, triGap: 'no' },
+  3: { ovN: 3, ovOp: 'flipX', orFold: 'tri', orCut: 'mix', triR: 3, triGap: 'no' },
+  4: { ovN: 3, ovOp: 'cw', orFold: '3', orCut: '1', triR: 4, triGap: 'mix' }
+};
+const DEF = { level: 1, det: Object.assign({}, PRESET[1]), ovKind: 'line', count: 5, sound: true, cans: 'choice', intro: true };
 function loadCfg() {
-  try { const s = JSON.parse(localStorage.getItem('zukei-renshu-cfg') || 'null'); return Object.assign({}, DEF, s || {}); }
-  catch (e) { return Object.assign({}, DEF); }
+  try {
+    const s = JSON.parse(localStorage.getItem('zukei-renshu-cfg2') || 'null') || {};
+    const c = Object.assign({}, DEF, s);
+    c.det = Object.assign({}, PRESET[c.level] || PRESET[1], s.det || {});
+    return c;
+  } catch (e) { return Object.assign({}, DEF, { det: Object.assign({}, PRESET[1]) }); }
 }
+function setLevel(n) { CFG.level = n; CFG.det = Object.assign({}, PRESET[n]); saveCfg(); }
+function setDet(k, v) {
+  CFG.det[k] = v;
+  CFG.level = 0;
+  for (const n of [1, 2, 3, 4]) if (Object.keys(PRESET[n]).every(key => PRESET[n][key] === CFG.det[key])) CFG.level = n;
+  saveCfg();
+}
+const lvText = () => CFG.level ? 'レベル' + CFG.level : 'じぶんで';
 let CFG = loadCfg();
-function saveCfg() { try { localStorage.setItem('zukei-renshu-cfg', JSON.stringify(CFG)); } catch (e) { /* 使えない環境では保存しない */ } }
+function saveCfg() { try { localStorage.setItem('zukei-renshu-cfg2', JSON.stringify(CFG)); } catch (e) { /* 使えない環境では保存しない */ } }
 
 /* ===== 音 ===== */
 let AC = null;
@@ -413,27 +452,60 @@ const MODE_NAME = { overlap: 'かさねる', origami: 'おりがみ', count: '�
 const MIX_ORDER = ['overlap', 'origami', 'count'];
 let SES = null;
 function show(name) {
-  for (const s of ['start', 'q', 'result']) document.getElementById('scr-' + s).hidden = (s !== name);
+  for (const s of ['start', 'intro', 'q', 'result']) document.getElementById('scr-' + s).hidden = (s !== name);
   window.scrollTo(0, 0);
 }
+const INTRO = {
+  overlap: [
+    '左{ひだり}と 右{みぎ}の 板{いた}を 重{かさ}ねると、どんな 形{かたち}に なるかを えらぶよ。',
+    '「うらがえして」「まわして」と 書{か}いてあるときは、右{みぎ}の 板{いた}を 動{うご}かしてから 重{かさ}ねるよ。',
+    'わからないときは「ヒント」を おすと、右{みぎ}の 板{いた}を ゆびで 動{うご}かせるよ。',
+    'こたえたあとは、板{いた}が 動{うご}いて 重{かさ}なるのを 見{み}て たしかめられるよ。'
+  ],
+  origami: [
+    '紙{かみ}を おって、しましまの ところを 切{き}りとるよ。',
+    'ひろげると どんな 形{かたち}に なるかを えらぶよ。',
+    'わからないときは「ヒント」を おすと、切{き}る 前{まえ}の 紙{かみ}を おったり ひろげたり できるよ。',
+    'こたえたあとは、紙{かみ}が ひらいていくのを 見{み}て たしかめられるよ。'
+  ],
+  count: [
+    '図{ず}の 中{なか}に 三角形{さんかくけい}が いくつ あるかを 数{かぞ}えるよ。',
+    '小{ちい}さい 三角形{さんかくけい}も、いくつかが 合{あ}わさった 大{おお}きい 三角形{さんかくけい}も 数{かぞ}えるよ。',
+    '点{てん}を 3つ タップすると、見{み}つけた 三角形{さんかくけい}に 色{いろ}が つくよ。',
+    '線{せん}が とちゅうで とぎれている ところに 気{き}をつけてね。'
+  ],
+  mix: [
+    'かさねる → おりがみ → かぞえる の じゅんばんで 問題{もんだい}が 出{で}るよ。',
+    'かさねる：2まいの 板{いた}を 重{かさ}ねた 形{かたち}を えらぶよ。',
+    'おりがみ：おって 切{き}った 紙{かみ}を ひろげた 形{かたち}を えらぶよ。',
+    'かぞえる：三角形{さんかくけい}が いくつ あるかを 数{かぞ}えるよ。',
+    'どの 問題{もんだい}も「ヒント」を おすと、動{うご}かして 考{かんが}えられるよ。'
+  ]
+};
+function openMode(mode) {
+  if (!CFG.intro) { startMode(mode); return; }
+  $('#intro-title').innerHTML = R(MODE_NAME[mode]) + '<span class="lv">' + lvText() + '</span>';
+  const fig = $('#intro-fig'); fig.innerHTML = '';
+  const src = document.querySelector('.mode-card[data-mode="' + mode + '"] svg');
+  if (src) fig.appendChild(src.cloneNode(true));
+  $('#intro-list').innerHTML = INTRO[mode].map(s => '<li>' + R(s) + '</li>').join('');
+  $('#intro-go').onclick = () => { unlockAudio(); startMode(mode); };
+  show('intro');
+}
 function startMode(mode) {
-  SES = { mode, level: CFG.level, total: CFG.count, idx: 0, results: [], cn: 0 };
+  SES = { mode, total: CFG.count, idx: 0, results: [] };
   show('q'); renderQ();
 }
 function renderQ() {
   stopAnim();
-  const m = SES.mode === 'mix' ? MIX_ORDER[SES.idx % 3] : SES.mode, L = SES.level;
-  $('#q-title').innerHTML = (SES.mode === 'mix' ? '3つとも ・ ' : '') + MODE_NAME[m] + '<span class="lv">レベル' + L + '</span>';
+  const m = SES.mode === 'mix' ? MIX_ORDER[SES.idx % 3] : SES.mode;
+  $('#q-title').innerHTML = (SES.mode === 'mix' ? '3つとも ・ ' : '') + MODE_NAME[m] + '<span class="lv">' + lvText() + '</span>';
   $('#q-prog').textContent = (SES.idx + 1) + ' / ' + SES.total;
   const fb = $('#q-feedback'); fb.hidden = true; fb.innerHTML = '';
   $('#q-answer').innerHTML = ''; $('#q-fig').innerHTML = ''; $('#q-extra').innerHTML = '';
-  if (m === 'overlap') Overlap.run(L);
-  else if (m === 'origami') Origami.run(L);
-  else {
-    const t = CFG.ctype === 'both' ? (SES.cn % 2 === 0 ? 'tri' : 'tile') : CFG.ctype;
-    SES.cn++;
-    if (t === 'tri') Tri.run(L); else Tile.run(L);
-  }
+  if (m === 'overlap') Overlap.run();
+  else if (m === 'origami') Origami.run();
+  else Tri.run();
 }
 function hintBox(btnLabel, note, build) {
   const ex = $('#q-extra');
@@ -521,79 +593,128 @@ function showResult() {
 }
 
 /* ======================================================
-   モード1 かさねる
+   モード1 かさねる（線 / 図形）
    ====================================================== */
 const Overlap = (() => {
+  const M = 15, BS = 130;
   const SEGS = [];
   for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) {
     if (x < 2) SEGS.push([x, y, x + 1, y]);
     if (y < 2) SEGS.push([x, y, x, y + 1]);
     if (x < 2 && y < 2) { SEGS.push([x, y, x + 1, y + 1]); SEGS.push([x + 1, y, x, y + 1]); }
   }
-  const key = s => { let [a, b, c, d] = s; if (a > c || (a === c && b > d)) [a, b, c, d] = [c, d, a, b]; return a + ',' + b + ',' + c + ',' + d; };
-  const TF = {
-    id: p => p, flipX: ([x, y]) => [2 - x, y], flipY: ([x, y]) => [x, 2 - y],
-    cw: ([x, y]) => [2 - y, x], ccw: ([x, y]) => [y, 2 - x], r180: ([x, y]) => [2 - x, 2 - y]
+  const TFs = G => {
+    const m = G - 1;
+    return {
+      id: p => p, flipX: ([x, y]) => [m - x, y], flipY: ([x, y]) => [x, m - y],
+      cw: ([x, y]) => [m - y, x], ccw: ([x, y]) => [y, m - x], r180: ([x, y]) => [m - x, m - y]
+    };
   };
-  const tf = (segs, f) => segs.map(s => { const p = f([s[0], s[1]]), q = f([s[2], s[3]]); return [p[0], p[1], q[0], q[1]]; });
-  const keysOf = segs => [...new Set(segs.map(key))].sort();
-  const fromKeys = ks => ks.map(k => k.split(',').map(Number));
-  const CELL = 50, M = 15, BS = CELL * 2 + M * 2;
+  const segKey = s => { let [a, b, c, d] = s; if (a > c || (a === c && b > d)) [a, b, c, d] = [c, d, a, b]; return 'S' + a + ',' + b + ',' + c + ',' + d; };
+  const polyKey = pl => {
+    const s = pl.map(p => p[0] + ',' + p[1]); const n = s.length; let best = null;
+    for (const dir of [1, -1]) for (let i = 0; i < n; i++) {
+      const arr = []; for (let k = 0; k < n; k++) arr.push(s[((i + dir * k) % n + n) % n]);
+      const j = arr.join(' '); if (best === null || j < best) best = j;
+    }
+    return 'P' + best;
+  };
+  const tfC = (C, f) => ({ segs: C.segs.map(s => { const p = f([s[0], s[1]]), q = f([s[2], s[3]]); return [p[0], p[1], q[0], q[1]]; }), polys: C.polys.map(pl => pl.map(f)) });
+  const join = (a, b) => ({ segs: a.segs.concat(b.segs), polys: a.polys.concat(b.polys) });
+  const keys = C => [...new Set(C.segs.map(segKey).concat(C.polys.map(polyKey)))].sort();
+  const nItems = C => C.segs.length + C.polys.length;
+  function hull(ptsIn) {
+    const p = ptsIn.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const lo = [], up = [];
+    for (const q of p) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+    for (let i = p.length - 1; i >= 0; i--) { const q = p[i]; while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+    up.pop(); lo.pop(); return lo.concat(up);
+  }
+  function randShape(G, minA, maxA) {
+    for (let t = 0; t < 500; t++) {
+      const m = Math.random() < .5 ? 3 : 4; const ps = [];
+      while (ps.length < m) { const q = [rnd(G), rnd(G)]; if (!ps.some(r => r[0] === q[0] && r[1] === q[1])) ps.push(q); }
+      const h = hull(ps); if (h.length !== m) continue;
+      const a = Math.abs(polyArea(h)); if (a < minA || a > maxA) continue;
+      return h;
+    }
+    return [[0, 0], [1, 0], [0, 1]];
+  }
+  const inG = (q, G) => q.every(p => p[0] >= 0 && p[0] < G && p[1] >= 0 && p[1] < G);
 
-  function gen(level) {
-    const k = level === 1 ? 2 : 3;
-    const op = level === 3 ? 'flipX' : level === 4 ? 'cw' : 'id';
-    let lastGood = null;
+  function gen(opt) {
+    const { op, kind } = opt; const G = kind === 'shape' ? 4 : 3; const TF = TFs(G); const T = TF[op];
+    let last = null;
     for (let tries = 0; tries < 800; tries++) {
-      const pool = shuffle(SEGS.slice());
-      const A = pool.slice(0, k); const Ak = new Set(A.map(key));
-      const rest = pool.slice(k).filter(s => !Ak.has(key(tf([s], TF[op])[0])));
-      if (rest.length < k) continue;
-      const B = rest.slice(0, k);
-      const TB = tf(B, TF[op]);
-      const C = keysOf(A.concat(TB));
-      if (C.length !== 2 * k) continue;
-      const Cs = fromKeys(C);
-      const notC = SEGS.filter(s => !C.includes(key(s)));
-      const cands = [];
-      const add = (segs, why) => cands.push({ ks: keysOf(segs), why });
-      if (op !== 'id') {
-        add(A.concat(B), 'noturn');
-        if (op === 'flipX') add(A.concat(tf(B, TF.flipY)), 'flipY');
-        else { add(A.concat(tf(B, TF.ccw)), 'ccw'); add(A.concat(tf(B, TF.r180)), 'r180'); }
+      let A, B;
+      if (kind === 'line') {
+        const k = opt.n; const pool = shuffle(SEGS.slice());
+        A = { segs: pool.slice(0, k), polys: [] }; B = { segs: pool.slice(k, 2 * k), polys: [] };
+      } else {
+        const r = opt.n <= 2 ? [1, 2] : [1, 3.5];
+        A = { segs: [], polys: [randShape(G, r[0], r[1])] };
+        if (opt.n >= 4) A.polys.push(randShape(G, 1, 2));
+        B = { segs: [], polys: [randShape(G, r[0], r[1])] };
       }
-      const d1 = key(pick(TB));
-      add(Cs.filter(s => key(s) !== d1), 'drop');
-      add(Cs.concat([pick(notC)]), 'extra');
-      const d2 = key(pick(TB));
-      add(Cs.filter(s => key(s) !== d2).concat([pick(notC)]), 'shift');
+      const TB = tfC(B, T); const C = join(A, TB);
+      if (keys(C).length !== nItems(C)) continue;
+      const Ck = keys(C);
+      const cands = []; const add = (c, why) => cands.push({ C: c, why });
+      if (op !== 'id') {
+        add(join(A, B), 'noturn');
+        if (op === 'flipX') add(join(A, tfC(B, TF.flipY)), 'flipY');
+        else { add(join(A, tfC(B, TF.ccw)), 'ccw'); add(join(A, tfC(B, TF.r180)), 'r180'); }
+      }
+      if (kind === 'line') {
+        const notC = SEGS.filter(s => !Ck.includes(segKey(s)));
+        const d1 = segKey(pick(TB.segs));
+        add({ segs: C.segs.filter(s => segKey(s) !== d1), polys: [] }, 'drop');
+        add({ segs: C.segs.concat([pick(notC)]), polys: [] }, 'extra');
+        const d2 = segKey(pick(TB.segs));
+        add({ segs: C.segs.filter(s => segKey(s) !== d2).concat([pick(notC)]), polys: [] }, 'shift');
+      } else {
+        const pb = TB.polys[0];
+        for (const [dx, dy] of shuffle([[1, 0], [-1, 0], [0, 1], [0, -1]])) {
+          const q = pb.map(p => [p[0] + dx, p[1] + dy]);
+          if (inG(q, G)) add({ segs: [], polys: A.polys.concat([q]) }, 'pshift');
+        }
+        for (let t = 0, got = 0; t < 60 && got < 2; t++) {
+          const i = rnd(pb.length); const q = pb.map(p => p.slice());
+          q[i] = [q[i][0] + pick([-1, 0, 1]), q[i][1] + pick([-1, 0, 1])];
+          if (!inG(q, G)) continue;
+          const h = hull(q);
+          if (h.length < 3 || Math.abs(polyArea(h)) < .5 || polyKey(h) === polyKey(pb)) continue;
+          add({ segs: [], polys: A.polys.concat([h]) }, 'reshape'); got++;
+        }
+      }
       const nt = cands.filter(c => c.why === 'noturn');
-      const order = op === 'id' ? shuffle(cands.slice()) : nt.concat(shuffle(cands.filter(c => c.why !== 'noturn')));
-      const seen = new Set([C.join('|')]); const picked = [];
+      const tfw = ['flipY', 'ccw', 'r180'];
+      const order = op === 'id' ? shuffle(cands.slice()) : nt.concat(shuffle(cands.filter(c => tfw.includes(c.why))).slice(0, 1), shuffle(cands.filter(c => c.why !== 'noturn')));
+      const seen = new Set([Ck.join('|')]); const picked = [];
       for (const c of order) {
-        const s = c.ks.join('|'); if (seen.has(s) || c.ks.length < 2) continue;
+        const s = keys(c.C).join('|'); if (seen.has(s) || nItems(c.C) < 2) continue;
         seen.add(s); picked.push(c); if (picked.length === 3) break;
       }
       if (picked.length < 3) continue;
-      const P = { A, B, op, opts: shuffle([{ ks: C, why: 'ok' }].concat(picked)) };
-      lastGood = P;
+      const P = { A, B, G, op, kind, opts: shuffle([{ C, why: 'ok' }].concat(picked)) };
+      last = P;
       if (op !== 'id' && !picked.some(c => c.why === 'noturn')) continue;
       return P;
     }
-    return lastGood;
+    return last;
   }
 
-  function board(segs, o) {
+  function board(C, G, o) {
     o = o || {};
+    const CELL = (BS - 2 * M) / (G - 1); const X = v => M + v * CELL;
+    const col = o.color || COL.blue;
     const g = S('g', { transform: 'translate(' + (o.x || 0) + ' ' + (o.y || 0) + ')' });
     if (o.bg !== false) g.appendChild(S('rect', { x: 0, y: 0, width: BS, height: BS, rx: 10, fill: '#ffffff', stroke: COL.boardEdge, 'stroke-width': 2 }));
-    if (o.outline) { const a = { x: 0, y: 0, width: BS, height: BS, rx: 10, fill: 'none', stroke: o.outline, 'stroke-width': 2 }; if (!o.outlineSolid) a['stroke-dasharray'] = '6 5'; g.appendChild(S('rect', a)); }
-    if (o.dots !== false) for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) g.appendChild(S('circle', { cx: M + i * CELL, cy: M + j * CELL, r: 3.5, fill: COL.dot }));
-    for (const s of segs) {
-      const a = { x1: M + s[0] * CELL, y1: M + s[1] * CELL, x2: M + s[2] * CELL, y2: M + s[3] * CELL, stroke: o.color || COL.ink, 'stroke-width': 6, 'stroke-linecap': 'round' };
-      if (o.dash) a['stroke-dasharray'] = o.dash;
-      g.appendChild(S('line', a));
-    }
+    if (o.outline) g.appendChild(S('rect', { x: 0, y: 0, width: BS, height: BS, rx: 10, fill: 'none', stroke: o.outline, 'stroke-width': 2 }));
+    if (o.dots !== false) for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) g.appendChild(S('circle', { cx: X(i), cy: X(j), r: G > 3 ? 3 : 3.5, fill: COL.dot }));
+    for (const pl of C.polys) g.appendChild(S('polygon', { points: pl.map(p => X(p[0]) + ',' + X(p[1])).join(' '), fill: col, 'fill-opacity': .16, stroke: col, 'stroke-width': 5, 'stroke-linejoin': 'round' }));
+    for (const s of C.segs) g.appendChild(S('line', { x1: X(s[0]), y1: X(s[1]), x2: X(s[2]), y2: X(s[3]), stroke: col, 'stroke-width': 6, 'stroke-linecap': 'round' }));
     return g;
   }
   const BX = 215, AX = 5, BY = 45;
@@ -612,14 +733,12 @@ const Overlap = (() => {
     }
   }
   // 右の板を動かせる図（u: うらがえし・回転の進み具合、s: スライドの進み具合）
-  function makeView(P, colored) {
+  function makeView(P) {
     const sv = S('svg', { viewBox: '0 0 350 185', class: 'wide-svg' });
-    sv.appendChild(board(P.A, { x: AX, y: BY, color: COL.blue }));
+    sv.appendChild(board(P.A, P.G, { x: AX, y: BY }));
     opIcon(sv, P.op);
     const g = S('g');
-    g.appendChild(board(P.B, colored
-      ? { bg: false, dots: false, color: COL.orange, dash: '11 8', outline: COL.orange }
-      : { bg: false, dots: true, color: COL.blue, outline: COL.boardEdge, outlineSolid: true }));
+    g.appendChild(board(P.B, P.G, { bg: false, outline: COL.boardEdge }));
     g.appendChild(S('rect', { x: 0, y: 0, width: BS, height: BS, fill: 'none', 'pointer-events': 'all' }));
     sv.appendChild(g);
     const v = { svg: sv, st: { u: 0, s: 0 }, onChange: null, enabled: false };
@@ -661,16 +780,16 @@ const Overlap = (() => {
     apply();
     return v;
   }
-  function controls(v, P) {
+  function controls(v, P, withSlide) {
     const box = H('div', { class: 'ctrl' });
-    let tb = null;
+    let tb = null, sb = null;
     if (P.op !== 'id') tb = ctrlBtn(box, P.op === 'flipX' ? 'うらがえす' : '90度{ど} まわす', () => v.turn());
-    const sb = ctrlBtn(box, 'かさねる', () => v.slide());
+    if (withSlide) sb = ctrlBtn(box, 'かさねる', () => v.slide());
     ctrlBtn(box, 'はじめに もどす', () => v.reset());
     let ls = null, lu = null;
     v.onChange = () => {
       const s = v.st.s > .5, u = v.st.u > .5;
-      if (s !== ls) { ls = s; sb.innerHTML = R(s ? 'はなす' : 'かさねる'); }
+      if (sb && s !== ls) { ls = s; sb.innerHTML = R(s ? 'はなす' : 'かさねる'); }
       if (tb && P.op === 'cw' && u !== lu) { lu = u; tb.innerHTML = R(u ? 'もとの 向{む}きに もどす' : '90度{ど} まわす'); }
     };
     v.onChange();
@@ -681,31 +800,39 @@ const Overlap = (() => {
     drop: () => '線{せん}が 1本{ぽん} たりないよ。',
     extra: () => 'よけいな 線{せん}が 1本{ぽん} あるよ。',
     shift: () => '線{せん}の 場所{ばしょ}が 1つ ちがうよ。',
-    noturn: l => l === 3 ? '右{みぎ}の 板{いた}を うらがえすのを わすれているよ。' : '右{みぎ}の 板{いた}を まわすのを わすれているよ。',
+    pshift: () => '右{みぎ}の 板{いた}の 形{かたち}の 場所{ばしょ}が 1つ ずれているよ。',
+    reshape: () => '右{みぎ}の 板{いた}の 形{かたち}が 少{すこ}し ちがうよ。',
+    noturn: op => op === 'flipX' ? '右{みぎ}の 板{いた}を うらがえすのを わすれているよ。' : '右{みぎ}の 板{いた}を まわすのを わすれているよ。',
     flipY: () => '上{うえ}と 下{した}を 入{い}れかえているよ。うらがえすと、左{ひだり}と 右{みぎ}が 入{い}れかわるよ。',
     ccw: () => 'まわす 向{む}きが 反対{はんたい}だよ。',
     r180: () => 'まわしすぎだよ。90度{ど}は、4分{ぶん}の1 まわりだよ。'
   };
-  function run(level) {
-    const P = gen(level);
-    const prompt = level <= 2 ? '2まいの 板{いた}を、そのまま 重{かさ}ねると、どんな 形{かたち}に なるかな？'
-      : level === 3 ? '右{みぎ}の 板{いた}を うらがえして（左{ひだり}と 右{みぎ}を 入{い}れかえて）、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？'
+  function run() {
+    const d = CFG.det;
+    const op = d.ovOp === 'mix' ? pick(['id', 'flipX', 'cw']) : d.ovOp;
+    const kind = CFG.ovKind === 'both' ? pick(['line', 'shape']) : CFG.ovKind;
+    const P = gen({ n: d.ovN, op, kind });
+    const prompt = op === 'id' ? '2まいの 板{いた}を、そのまま 重{かさ}ねると、どんな 形{かたち}に なるかな？'
+      : op === 'flipX' ? '右{みぎ}の 板{いた}を うらがえして（左{ひだり}と 右{みぎ}を 入{い}れかえて）、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？'
       : '右{みぎ}の 板{いた}を 矢印{やじるし}の 向{む}きに 90度{ど} まわして、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？';
     $('#q-prompt').innerHTML = R(prompt);
-    const view = makeView(P, false);
+    const view = makeView(P);
     $('#q-fig').appendChild(view.svg);
-    hintBox('ヒント：右{みぎ}の 板{いた}を 動{うご}かしてみる', 'ボタンを おすか、右{みぎ}の 板{いた}を ゆびで 左{ひだり}へ 動{うご}かしてみてね。', tool => tool.appendChild(controls(view, P)));
+    hintBox('ヒント：右{みぎ}の 板{いた}を 動{うご}かしてみる',
+      op === 'id' ? '右{みぎ}の 板{いた}を ゆびで 左{ひだり}へ 動{うご}かして、重{かさ}ねてみてね。'
+        : 'ボタンで 右{みぎ}の 板{いた}を 動{うご}かしてから、ゆびで 左{ひだり}へ 動{うご}かして 重{かさ}ねてみてね。',
+      tool => tool.appendChild(controls(view, P, false)));
     const correct = P.opts.findIndex(o => o.why === 'ok');
-    const svgs = P.opts.map(o => S('svg', { viewBox: '0 0 ' + BS + ' ' + BS }, [board(fromKeys(o.ks), { color: COL.blue })]));
+    const svgs = P.opts.map(o => S('svg', { viewBox: '0 0 ' + BS + ' ' + BS }, [board(o.C, P.G)]));
     choices(svgs, correct, i => {
       const ok = i === correct; answered(ok);
       const fig = $('#q-fig'), ex = $('#q-extra'); stopAnim(); fig.innerHTML = ''; ex.innerHTML = '';
-      const v2 = makeView(P, false); fig.appendChild(v2.svg);
+      const v2 = makeView(P); fig.appendChild(v2.svg);
       const tool = H('div', { class: 'tool' });
       tool.appendChild(H('p', null, R('ボタンや ゆびで、右{みぎ}の 板{いた}を 動{うご}かして たしかめられるよ。')));
-      tool.appendChild(controls(v2, P)); ex.appendChild(tool);
+      tool.appendChild(controls(v2, P, true)); ex.appendChild(tool);
       let body = '右{みぎ}の 板{いた}を 動{うご}かして、左{ひだり}の 板{いた}に 重{かさ}ねると、こうなるよ。';
-      if (!ok) body = WHY[P.opts[i].why](level) + '<br>' + body;
+      if (!ok) body = WHY[P.opts[i].why](op) + '<br>' + body;
       feedback({ ok, head: ok ? '' : 'せいかいは ' + KANA[correct] + ' だよ。', body, replay: () => v2.playAll() });
       v2.playAll();
     });
@@ -793,12 +920,11 @@ const Origami = (() => {
   }
   function rdiff(a, b) { let c = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) c++; return c; }
 
-  function gen(level) {
+  function gen(level, count) {
     let fallback = null;
     for (let t = 0; t < 120; t++) {
       const { folds, regions } = makeFolds(level);
       const Rf = regions[regions.length - 1];
-      const count = (level === 2 || level === 3) ? (Math.random() < .5 ? 1 : 2) : 1;
       const cuts = makeCuts(Rf, level, count); if (!cuts) continue;
       const polys = cuts.map(c => c.poly);
       const refl = i => p => reflectP(p, folds[i]);
@@ -953,8 +1079,12 @@ const Origami = (() => {
     perp: 'おりめの 場所{ばしょ}が ちがうよ。どこで おったかを たしかめてね。',
     position: 'あなの 場所{ばしょ}が ちがうよ。'
   };
-  function run(level) {
-    const P = gen(level);
+  function run() {
+    const d = CFG.det;
+    const fold = d.orFold === 'mix' ? pick(['1', '2', 'tri', '3']) : d.orFold;
+    const level = { '1': 1, '2': 2, 'tri': 3, '3': 4 }[fold];
+    const count = d.orCut === 'mix' ? (Math.random() < .5 ? 1 : 2) : Number(d.orCut);
+    const P = gen(level, count) || gen(level, 1);
     $('#q-prompt').innerHTML = R('紙{かみ}を おって、しましまの ところを 切{き}りとったよ。ひろげると、どんな 形{かたち}に なるかな？');
     $('#q-fig').appendChild(stepsFig(P));
     hintBox('ヒント：紙{かみ}を おってみる', '切{き}る 前{まえ}の 紙{かみ}だよ。「おる」と「ひらく」で、おったり もどしたり できるよ。', tool => {
@@ -978,30 +1108,39 @@ const Origami = (() => {
 })();
 
 /* ======================================================
-   モード3a かぞえる（三角形）
+   モード3 かぞえる（三角形）
    ====================================================== */
 const Tri = (() => {
   const RANGE = { 1: [2, 4], 2: [5, 10], 3: [8, 13], 4: [14, 22] };
+  // 図のもと。nb は外がわの線の本数（とぎれさせるのは内がわの線だけ）
   function fan(k, h) {
     const A = [.5, .06], L = [.06, .94], Rt = [.94, .94];
     const segs = [[A, L], [A, Rt], [L, Rt]];
     for (let i = 1; i <= k; i++) { const x = .06 + .88 * i / (k + 1) + (Math.random() - .5) * .1 / (k + 1); segs.push([A, [x, .94]]); }
     for (let j = 1; j <= h; j++) { const t = j / (h + 1) + (Math.random() - .5) * .12 / (h + 1); const y = .06 + .88 * t; segs.push([[.5 - .44 * t, y], [.5 + .44 * t, y]]); }
-    return segs;
+    return { segs, nb: 3 };
   }
   function sq(o) {
     const a = .1, b = .9;
     const segs = [[[a, a], [b, a]], [[b, a], [b, b]], [[b, b], [a, b]], [[a, b], [a, a]]];
     if (o.d1) segs.push([[a, a], [b, b]]); if (o.d2) segs.push([[b, a], [a, b]]);
     if (o.mh) segs.push([[a, .5], [b, .5]]); if (o.mv) segs.push([[.5, a], [.5, b]]);
-    return segs;
+    return { segs, nb: 4 };
   }
   function rect2(l, r) {
     const x0 = .04, x1 = .5, x2 = .96, y0 = .28, y1 = .72;
     const segs = [[[x0, y0], [x2, y0]], [[x2, y0], [x2, y1]], [[x2, y1], [x0, y1]], [[x0, y1], [x0, y0]], [[x1, y0], [x1, y1]]];
     const dg = (xa, xb, t) => { if (t === 'd1' || t === 'X') segs.push([[xa, y0], [xb, y1]]); if (t === 'd2' || t === 'X') segs.push([[xb, y0], [xa, y1]]); };
     dg(x0, x1, l); dg(x1, x2, r);
-    return segs;
+    return { segs, nb: 4 };
+  }
+  // 正三角形を n 等分した図
+  function triGrid(n) {
+    const A = [.5, .1], B = [.05, .879], C = [.95, .879];
+    const segs = [[A, B], [B, C], [C, A]];
+    const lerp = (p, q, t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+    for (const [Z, X, Y] of [[A, B, C], [B, C, A], [C, A, B]]) for (let i = 1; i < n; i++) { const t = i / n; segs.push([lerp(Z, X, t), lerp(Z, Y, t)]); }
+    return { segs, nb: 3 };
   }
   function segInter(s, t) {
     const p = s[0], r = sub(s[1], s[0]), q = t[0], u = sub(t[1], t[0]);
@@ -1015,11 +1154,15 @@ const Tri = (() => {
     if (Math.abs(crs(d, v)) > 1e-7) return false;
     const t = dot(d, v); return t > -1e-9 && t < dot(d, d) + 1e-9;
   }
-  function analyze(segs) {
+  function vertsOf(segs) {
     const V = [];
     const addV = p => { for (let i = 0; i < V.length; i++) if (Math.hypot(V[i][0] - p[0], V[i][1] - p[1]) < 1e-4) return i; V.push(p); return V.length - 1; };
     segs.forEach(s => { addV(s[0]); addV(s[1]); });
     for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) { const x = segInter(segs[i], segs[j]); if (x) addV(x); }
+    return V;
+  }
+  function analyze(segs) {
+    const V = vertsOf(segs);
     const conn = new Set();
     segs.forEach(s => {
       const on = []; V.forEach((p, i) => { if (onSeg(p, s)) on.push(i); });
@@ -1036,22 +1179,65 @@ const Tri = (() => {
     }
     return { V, tris };
   }
+  // 内がわの線を 1か所だけ とぎれさせる
+  function withGap(F) {
+    const V = vertsOf(F.segs);
+    const inner = shuffle(F.segs.map((s, i) => i).filter(i => i >= F.nb));
+    for (const si of inner) {
+      const s = F.segs[si]; const d = sub(s[1], s[0]);
+      const on = V.filter(p => onSeg(p, s)).sort((a, b) => dot(sub(a, s[0]), d) - dot(sub(b, s[0]), d));
+      if (on.length < 3) continue;
+      const k = rnd(on.length - 1);
+      const segs = F.segs.filter((x, i) => i !== si);
+      if (k > 0) segs.push([on[0], on[k]]);
+      if (k + 1 < on.length - 1) segs.push([on[k + 1], on[on.length - 1]]);
+      return { segs, nb: F.nb, gap: [on[k], on[k + 1]] };
+    }
+    return null;
+  }
   function candidates() {
     const c = [];
     for (let k = 0; k <= 3; k++) for (let h = 0; h <= 2; h++) c.push(() => fan(k, h));
     [{ d1: 1 }, { d1: 1, mh: 1 }, { d1: 1, d2: 1 }, { d1: 1, d2: 1, mh: 1 }, { d1: 1, d2: 1, mh: 1, mv: 1 }, { d1: 1, mh: 1, mv: 1 }].forEach(o => c.push(() => sq(o)));
     for (const l of ['d1', 'd2', 'X']) for (const r of ['d1', 'd2', 'X']) c.push(() => rect2(l, r));
+    c.push(() => triGrid(2)); c.push(() => triGrid(3)); c.push(() => triGrid(3));
     return c;
   }
-  function gen(level) {
-    const [lo, hi] = RANGE[level];
-    for (let round = 0; round < 5; round++) {
+  function gen(range, gap) {
+    const [lo, hi] = RANGE[range];
+    for (let round = 0; round < 8; round++) {
       for (const f of shuffle(candidates())) {
-        const segs = f(); const an = analyze(segs);
-        if (an.tris.length >= lo && an.tris.length <= hi) return { segs, V: an.V, tris: an.tris };
+        let F = f();
+        if (gap) {
+          const full = analyze(F.segs).tris.length;
+          if (full < lo) continue;
+          F = withGap(F); if (!F) continue;
+          const an = analyze(F.segs);
+          if (an.tris.length < Math.max(3, lo - 6) || an.tris.length > hi || an.tris.length >= full) continue;
+          return { segs: F.segs, V: an.V, tris: an.tris, gap: F.gap };
+        }
+        const an = analyze(F.segs);
+        if (an.tris.length >= lo && an.tris.length <= hi) return { segs: F.segs, V: an.V, tris: an.tris, gap: null };
       }
     }
-    const segs = fan(1, 0); const an = analyze(segs); return { segs, V: an.V, tris: an.tris };
+    const F = fan(1, 0); const an = analyze(F.segs); return { segs: F.segs, V: an.V, tris: an.tris, gap: null };
+  }
+  // 図が 回転しても 同じ形なら、ぐるっと まわる じゅんばんで 数える
+  function isSym(V, cen) {
+    for (const deg of [90, 120, 180]) {
+      const a = deg * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+      const ok = V.every(p => { const x = p[0] - cen[0], y = p[1] - cen[1]; const q = [cen[0] + x * ca - y * sa, cen[1] + x * sa + y * ca]; return V.some(r => Math.hypot(r[0] - q[0], r[1] - q[1]) < 2e-3); });
+      if (ok) return true;
+    }
+    return false;
+  }
+  function orderTris(P) {
+    const cen = centroid(P.V); const sym = isSym(P.V, cen);
+    const items = P.tris.map(t => { const q = t.map(i => P.V[i]); return { t, a: Math.abs(polyArea(q)), c: centroid(q) }; }).sort((x, y) => x.a - y.a);
+    let grp = 0; items.forEach((o, i) => { if (i > 0 && o.a > items[i - 1].a * 1.25) grp++; o.g = grp; });
+    const ang = o => { const dx = o.c[0] - cen[0], dy = o.c[1] - cen[1]; if (Math.hypot(dx, dy) < .02) return -1; return ((Math.atan2(dy, dx) + Math.PI / 2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI); };
+    items.sort((x, y) => x.g - y.g || (sym ? ang(x) - ang(y) : (Math.abs(x.c[1] - y.c[1]) > .04 ? x.c[1] - y.c[1] : x.c[0] - y.c[0])));
+    return { items, sym };
   }
   function drawLines(g, segs, w, color) { for (const s of segs) g.appendChild(S('line', { x1: s[0][0], y1: s[0][1], x2: s[1][0], y2: s[1][1], stroke: color, 'stroke-width': w, 'stroke-linecap': 'round' })); }
   function thumb(P, t, label, missed) {
@@ -1067,14 +1253,16 @@ const Tri = (() => {
     const p = sv.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
     const q = p.matrixTransform(m.inverse()); return [q.x, q.y];
   }
-  function run(level) {
-    const P = gen(level);
+  function run() {
+    const d = CFG.det;
+    const gap = d.triGap === 'yes' || (d.triGap === 'mix' && Math.random() < .5);
+    const P = gen(d.triR, gap);
     $('#q-prompt').innerHTML = R('この 図{ず}の 中{なか}に、三角形{さんかくけい}は ぜんぶで いくつ あるかな？');
     const fig = $('#q-fig');
     const label = H('div', { class: 'big-count', 'aria-live': 'polite' }, ''); label.hidden = true; fig.appendChild(label);
     const sv = S('svg', { viewBox: '-0.06 -0.06 1.12 1.12', class: 'tri-svg' });
-    const gF = S('g'), gL = S('g'), gD = S('g'), gS = S('g');
-    sv.append(gF, gL, gD, gS);
+    const gF = S('g'), gL = S('g'), gG = S('g'), gD = S('g'), gS = S('g');
+    sv.append(gF, gL, gG, gD, gS);
     drawLines(gL, P.segs, .012, COL.ink);
     P.V.forEach(p => gD.appendChild(S('circle', { cx: p[0], cy: p[1], r: .015, fill: COL.dot })));
     fig.appendChild(sv);
@@ -1101,12 +1289,12 @@ const Tri = (() => {
       e.preventDefault(); unlockAudio();
       const pt = toSvg(sv, e);
       let bi = -1, bd = .09;
-      P.V.forEach((p, i) => { const d = Math.hypot(p[0] - pt[0], p[1] - pt[1]); if (d < bd) { bd = d; bi = i; } });
+      P.V.forEach((p, i) => { const dd = Math.hypot(p[0] - pt[0], p[1] - pt[1]); if (dd < bd) { bd = dd; bi = i; } });
       if (bi < 0) return;
       const k = sel.indexOf(bi); if (k >= 0) sel.splice(k, 1); else sel.push(bi);
       sfx('tap'); fillTri(null);
       if (sel.length === 3) {
-        const s3 = sel.slice().sort((a, b) => a - b); const key = s3.join(',');
+        const key = sel.slice().sort((a, b) => a - b).join(',');
         const t = P.tris.find(x => x.join(',') === key);
         if (!t) say('その 3つの 点{てん}では、三角形{さんかくけい}に ならないみたい。');
         else if (found.includes(key)) { say('それは もう 見{み}つけたよ。'); fillTri(t); }
@@ -1125,156 +1313,34 @@ const Tri = (() => {
     countAnswer(P.tris.length, 'こ', v => {
       active = false; sel = []; drawSel(); clr.disabled = true;
       const n = P.tris.length; const ok = v === n; answered(ok);
-      // 小さい順。同じくらいの大きさは、上から・左から の順
-      const items = P.tris.map(t => { const q = t.map(i => P.V[i]); return { t, a: Math.abs(polyArea(q)), c: centroid(q) }; }).sort((x, y) => x.a - y.a);
-      let grp = 0; items.forEach((o, i) => { if (i > 0 && o.a > items[i - 1].a * 1.25) grp++; o.g = grp; });
-      const sorted = items.sort((x, y) => x.g - y.g || (Math.abs(x.c[1] - y.c[1]) > .04 ? x.c[1] - y.c[1] : x.c[0] - y.c[0]));
-      // 一覧
+      const { items, sym } = orderTris(P);
       ex.innerHTML = '';
       const list = H('div', { class: 'tool' });
       list.innerHTML = '<p><b>' + R('ぜんぶの 三角形{さんかくけい}（' + n + 'こ）') + '</b></p>' +
         (found.length ? '<p>' + R('オレンジの 点線{てんせん}の わくは、まだ 見{み}つけていなかった 三角形{さんかくけい}だよ。') + '</p>' : '');
       const tw = H('div', { class: 'thumbs' });
-      sorted.forEach((o, i) => tw.appendChild(thumb(P, o.t, String(i + 1), found.length > 0 && !found.includes(o.t.join(',')))));
+      items.forEach((o, i) => tw.appendChild(thumb(P, o.t, String(i + 1), found.length > 0 && !found.includes(o.t.join(',')))));
       list.appendChild(tw); ex.appendChild(list);
+      const showGap = () => {
+        gG.innerHTML = '';
+        if (P.gap) {
+          const m = [(P.gap[0][0] + P.gap[1][0]) / 2, (P.gap[0][1] + P.gap[1][1]) / 2];
+          gG.appendChild(S('line', { x1: P.gap[0][0], y1: P.gap[0][1], x2: P.gap[1][0], y2: P.gap[1][1], stroke: COL.orange, 'stroke-width': .012, 'stroke-dasharray': '.025 .02' }));
+          gG.appendChild(S('circle', { cx: m[0], cy: m[1], r: .045, fill: 'none', stroke: COL.orange, 'stroke-width': .012 }));
+        }
+      };
       const play = () => {
-        label.hidden = false;
-        const steps = sorted.map((o, i) => ({ dur: .6, linear: true, start: () => { fillTri(o.t); label.textContent = (i + 1) + 'こめ'; } }));
+        label.hidden = false; showGap();
+        const steps = items.map((o, i) => ({ dur: .6, linear: true, start: () => { fillTri(o.t); label.textContent = (i + 1) + 'こめ'; } }));
         runSeq(steps, () => { fillTri(null); label.textContent = 'ぜんぶで ' + n + 'こ'; });
       };
+      let body = sym
+        ? '同{おな}じ 大{おお}きさの 三角形{さんかくけい}を、ぐるっと まわる じゅんばんで 数{かぞ}えると、もれなく 数{かぞ}えられるよ。小{ちい}さい ものから 大{おお}きい ものへ 数{かぞ}えていくよ。'
+        : '小{ちい}さい 三角形{さんかくけい}から 大{おお}きい 三角形{さんかくけい}へ、同{おな}じ 大{おお}きさの ものは 上{うえ}から・左{ひだり}から じゅんばんに 数{かぞ}えると、もれなく 数{かぞ}えられるよ。';
+      if (P.gap) body += '<br>オレンジの 〇の ところは、線{せん}が とぎれているよ。ここには 線{せん}が ないので、気{き}をつけてね。';
       feedback({
         ok, head: ok ? '' : 'せいかいは ' + n + 'こ だよ。（こたえは ' + v + 'こ だったね）',
-        body: '小{ちい}さい 三角形{さんかくけい}から 大{おお}きい 三角形{さんかくけい}へ、同{おな}じ 大{おお}きさの ものは 上{うえ}から・左{ひだり}から じゅんばんに 数{かぞ}えると、もれなく 数{かぞ}えられるよ。ぜんぶで ' + n + 'こ だよ。',
-        replay: play
-      });
-      play();
-    });
-  }
-  return { run, gen };
-})();
-
-/* ======================================================
-   モード3b かぞえる（カード）
-   ====================================================== */
-const Tile = (() => {
-  const CS = 56, SC = 1.25;
-  const LV = {
-    1: { w: [2, 3], h: 2, lines: true, full: false, rng: [2, 5], p: .65 },
-    2: { w: [3], h: 3, lines: true, full: false, rng: [4, 8], p: .6 },
-    3: { w: [3], h: 3, lines: false, full: false, rng: [4, 8], p: .65 },
-    4: { w: [4], h: 3, lines: false, full: true, rng: [6, 10], p: .7 }
-  };
-  function gen(level) {
-    const L = LV[level];
-    for (let t = 0; t < 2000; t++) {
-      const w = pick(L.w), h = L.h; const cells = [];
-      for (let i = 0; i < w * h; i++) cells.push(Math.random() < L.p ? (L.full && Math.random() < .25 ? 5 : 1 + rnd(4)) : 0);
-      const n = cells.filter(v => v).length;
-      if (n < L.rng[0] || n > L.rng[1]) continue;
-      const rowHas = r => cells.slice(r * w, r * w + w).some(v => v);
-      const colHas = c => { for (let r = 0; r < h; r++) if (cells[r * w + c]) return true; return false; };
-      if (!rowHas(0) || !rowHas(h - 1) || !colHas(0) || !colHas(w - 1)) continue;
-      if (L.full && (!cells.includes(5) || !cells.some(v => v >= 1 && v <= 4))) continue;
-      return { w, h, cells, n, lines: L.lines, full: L.full };
-    }
-    return { w: 2, h: 2, cells: [1, 3, 0, 2], n: 3, lines: L.lines, full: false };
-  }
-  function triPts(x, y, s, v) {
-    const A = [x, y], B = [x + s, y], C = [x + s, y + s], D = [x, y + s];
-    return v === 1 ? [A, D, C] : v === 2 ? [A, B, D] : v === 3 ? [A, B, C] : [B, C, D];
-  }
-  function drawCell(g, x, y, v, outline) {
-    if (!v) return;
-    const e = outline ? 0 : .6;
-    g.appendChild(S('rect', { x: x - e, y: y - e, width: CS + 2 * e, height: CS + 2 * e, fill: COL.card }));
-    if (v === 5) g.appendChild(S('rect', { x: x - e, y: y - e, width: CS + 2 * e, height: CS + 2 * e, fill: COL.cardDark }));
-    else g.appendChild(S('polygon', { points: pts(triPts(x, y, CS, v)), fill: COL.cardDark, stroke: COL.cardDark, 'stroke-width': 1, 'stroke-linejoin': 'round' }));
-    if (outline) g.appendChild(S('rect', { x, y, width: CS, height: CS, fill: 'none', stroke: COL.ink, 'stroke-width': 2 }));
-  }
-  function gridSvg(w, h) {
-    const W = w * CS + 16, Hh = h * CS + 16;
-    const sv = S('svg', { viewBox: '-8 -8 ' + W + ' ' + Hh });
-    sv.style.width = (W * SC) + 'px';
-    return sv;
-  }
-  function patternSvg(P) {
-    const sv = gridSvg(P.w, P.h); const g = S('g'); sv.appendChild(g);
-    P.cells.forEach((v, i) => drawCell(g, (i % P.w) * CS, Math.floor(i / P.w) * CS, v, P.lines));
-    return sv;
-  }
-  function sampleSvg(v) {
-    const sv = S('svg', { viewBox: '-8 -8 ' + (CS + 16) + ' ' + (CS + 16) }); sv.style.width = ((CS + 16) * SC) + 'px';
-    drawCell(sv, 0, 0, v, true); return sv;
-  }
-  function run(level) {
-    const P = gen(level);
-    $('#q-prompt').innerHTML = R(P.full
-      ? 'この もようは、2しゅるいの カードを ならべて つくったよ。カードは ぜんぶで なんまい つかったかな？'
-      : 'この もようは、カードを ならべて つくったよ。カードは なんまい つかったかな？');
-    const fig = $('#q-fig');
-    const label = H('div', { class: 'big-count', 'aria-live': 'polite' }, ''); label.hidden = true; fig.appendChild(label);
-    const pat = patternSvg(P); const over = S('g'); pat.appendChild(over); fig.appendChild(pat);
-    const smp = H('div', { class: 'sample' });
-    const row = H('div', { class: 'sample-row' });
-    row.appendChild(sampleSvg(1)); if (P.full) row.appendChild(sampleSvg(5));
-    smp.appendChild(row); smp.appendChild(H('span', null, R('つかった カード（同{おな}じ 大{おお}きさ）')));
-    fig.appendChild(smp);
-
-    // つくって たしかめる
-    const ex = $('#q-extra');
-    const tool = H('div', { class: 'tool build' });
-    tool.innerHTML = '<p>' + R('マスを タップすると、カードが おけるよ。タップするたびに 向{む}きが かわるよ。') + '</p>';
-    const bsv = gridSvg(P.w, P.h); tool.appendChild(bsv);
-    const bmsg = H('p', { class: 'msg', 'aria-live': 'polite' }, ''); tool.appendChild(bmsg);
-    const bclr = H('button', { class: 'btn btn-sub btn-small', type: 'button' }, 'ぜんぶ けす'); tool.appendChild(bclr);
-    const toggle = H('button', { class: 'btn btn-sub', type: 'button' }, R('カードを ならべて たしかめる'));
-    ex.appendChild(toggle);
-    tool.hidden = true; ex.appendChild(tool);
-    toggle.addEventListener('click', () => { unlockAudio(); tool.hidden = !tool.hidden; toggle.innerHTML = R(tool.hidden ? 'カードを ならべて たしかめる' : 'ならべる ところを とじる'); });
-    const maxV = P.full ? 5 : 4;
-    const build = new Array(P.w * P.h).fill(0);
-    let active = true;
-    function drawBuild() {
-      bsv.innerHTML = '';
-      build.forEach((v, i) => {
-        const x = (i % P.w) * CS, y = Math.floor(i / P.w) * CS;
-        const g = S('g');
-        g.appendChild(S('rect', { x, y, width: CS, height: CS, fill: '#ffffff', stroke: COL.faint, 'stroke-width': 1.5, 'stroke-dasharray': '4 3' }));
-        drawCell(g, x, y, v, true);
-        g.addEventListener('click', () => {
-          if (!active) return; unlockAudio();
-          build[i] = (build[i] + 1) % (maxV + 1); sfx('tap'); drawBuild();
-          bmsg.innerHTML = build.every((b, j) => b === P.cells[j]) ? R('おなじ もようが できたね！') : '';
-        });
-        bsv.appendChild(g);
-      });
-    }
-    drawBuild();
-    bclr.addEventListener('click', () => { if (!active) return; build.fill(0); drawBuild(); bmsg.innerHTML = ''; });
-
-    countAnswer(P.n, 'まい', v => {
-      active = false; bclr.disabled = true;
-      const ok = v === P.n; answered(ok);
-      const idx = []; P.cells.forEach((c, i) => { if (c) idx.push(i); });
-      const play = () => {
-        label.hidden = false; over.innerHTML = '';
-        const steps = [{ dur: .6, linear: true, start: () => {
-          label.textContent = '';
-          idx.forEach(i => over.appendChild(S('rect', { x: (i % P.w) * CS, y: Math.floor(i / P.w) * CS, width: CS, height: CS, fill: 'none', stroke: COL.orange, 'stroke-width': 2, 'stroke-dasharray': '5 4' })));
-        } }];
-        idx.forEach((i, k) => steps.push({ dur: .5, linear: true, start: () => {
-          const x = (i % P.w) * CS, y = Math.floor(i / P.w) * CS;
-          over.appendChild(S('rect', { x: x + 2, y: y + 2, width: CS - 4, height: CS - 4, fill: 'none', stroke: COL.orange, 'stroke-width': 4 }));
-          over.appendChild(S('circle', { cx: x + CS / 2, cy: y + CS / 2, r: 14, fill: '#ffffff', stroke: COL.orange, 'stroke-width': 2.5 }));
-          over.appendChild(T(x + CS / 2, y + CS / 2 + 6, String(k + 1), { 'font-size': 17, 'font-weight': 700, 'text-anchor': 'middle', fill: COL.ink }));
-          label.textContent = (k + 1) + 'まい';
-        } }));
-        runSeq(steps, () => { label.textContent = 'ぜんぶで ' + P.n + 'まい'; });
-      };
-      feedback({
-        ok, head: ok ? '' : 'せいかいは ' + P.n + 'まい だよ。（こたえは ' + v + 'まい だったね）',
-        body: (P.lines ? 'カードを 上{うえ}の 列{れつ}から、左{ひだり}から じゅんばんに 数{かぞ}えると、' : 'カードの さかいめに 線{せん}を 引{ひ}いて、上{うえ}の 列{れつ}から、左{ひだり}から じゅんばんに 数{かぞ}えてみると、') + 'ぜんぶで ' + P.n + 'まい だよ。',
-        replay: play
+        body: body + '<br>ぜんぶで ' + n + 'こ だよ。', replay: play
       });
       play();
     });
@@ -1283,56 +1349,68 @@ const Tile = (() => {
 })();
 
 /* ===== 設定画面 ===== */
-const LV_DESC = [
-  ['線{せん}2本{ほん}ずつ・そのまま', '1回{かい} おる', '2〜4こ', 'わくあり・小{ちい}さい'],
-  ['線{せん}3本{ぼん}ずつ・そのまま', '2回{かい} おる', '5〜10こ', 'わくあり・3×3'],
-  ['うらがえして 重{かさ}ねる', '三角{さんかく}に おる', '8〜13こ', 'わくなし・3×3'],
-  ['90度{ど} まわして 重{かさ}ねる', '3回{かい} おる', '14こ いじょう', 'わくなし・2しゅるい']
-];
 function sumText() { $('#cfg-sum').innerHTML = R(CFG.count + 'もん　・　効果音{こうかおん} ' + (CFG.sound ? 'ON' : 'OFF')); }
 function startLevel() {
   const box = $('#start-level'); box.innerHTML = '';
-  const s = seg([1, 2, 3, 4].map(n => [String(n), n]), CFG.level, v => { CFG.level = v; saveCfg(); sumText(); });
+  const s = seg([1, 2, 3, 4].map(n => [String(n), n]), CFG.level, v => { setLevel(v); startLevel(); });
   s.classList.add('big'); box.appendChild(s);
+  if (!CFG.level) box.appendChild(H('span', { class: 'ctrl-lab' }, R('（せっていで こまかく えらんでいるよ）')));
 }
-function closeSettings() { $('#settings').hidden = true; startLevel(); }
+function closeSettings() { $('#settings').hidden = true; startLevel(); sumText(); }
 function buildSettings() {
-  const card = $('#settings .modal-card'); card.innerHTML = '';
+  const card = $('#settings .modal-card');
+  const keep = card.scrollTop;
+  card.innerHTML = '';
   card.appendChild(H('h2', null, R('設定{せってい}')));
   const row = (label, ctrl) => { const r = H('div', { class: 'set-row' }); r.appendChild(H('div', { class: 'set-label' }, R(label))); r.appendChild(ctrl); card.appendChild(r); return r; };
-  const tw = H('div', { class: 'table-wrap' });
-  const refresh = () => {
-    tw.innerHTML = '<table class="lv-table"><thead><tr><th>レベル</th><th>かさねる</th><th>おりがみ</th><th>' + R('三角形{さんかくけい}') + '</th><th>カード</th></tr></thead><tbody>' +
-      LV_DESC.map((r, i) => '<tr class="' + (i + 1 === CFG.level ? 'cur' : '') + '"><td>' + (i + 1) + '</td>' + r.map(c => '<td>' + R(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
-  };
-  const lvSeg = seg([1, 2, 3, 4].map(n => [String(n), n]), CFG.level, v => { CFG.level = v; saveCfg(); refresh(); sumText(); });
-  lvSeg.classList.add('big');
-  row('レベル', lvSeg);
-  card.appendChild(tw); refresh();
-  row('問題{もんだい}の 数{かず}', stepper(CFG.count, 3, 20, v => { CFG.count = v; saveCfg(); sumText(); }).el);
-  row('効果音{こうかおん}', seg([['ON', true], ['OFF', false]], CFG.sound, v => { CFG.sound = v; saveCfg(); sumText(); }));
-  row('かぞえるの 問題{もんだい}', seg([[R('三角形{さんかくけい}'), 'tri'], ['カード', 'tile'], ['りょうほう', 'both']], CFG.ctype, v => { CFG.ctype = v; saveCfg(); }));
+  const head = t => card.appendChild(H('h3', { class: 'set-h3' }, R(t)));
+  const re = () => buildSettings();
+  const det = (k, items) => seg(items.map(([l, v]) => [R(l), v]), CFG.det[k], v => { setDet(k, v); re(); });
+
+  const lv = seg([1, 2, 3, 4].map(n => [String(n), n]), CFG.level, v => { setLevel(v); re(); });
+  lv.classList.add('big');
+  const r0 = row('レベル', lv);
+  if (!CFG.level) r0.appendChild(H('span', { class: 'ctrl-lab' }, R('いまは こまかく えらんだ 設定{せってい}だよ')));
+  card.appendChild(H('p', { class: 'set-note' }, R('レベルを えらぶと、下{した}の「レベルで かわる ところ」が まとめて かわるよ。1つずつ えらぶことも できるよ。')));
+
+  head('レベルで かわる ところ：かさねる');
+  row('線{せん}・形{かたち}の 数{かず}', det('ovN', [['少{すく}ない', 2], ['ふつう', 3], ['多{おお}い', 4]]));
+  row('右{みぎ}の 板{いた}の 動{うご}かし方{かた}', det('ovOp', [['そのまま', 'id'], ['うらがえす', 'flipX'], ['まわす', 'cw'], ['まぜる', 'mix']]));
+  head('レベルで かわる ところ：おりがみ');
+  row('おり方{かた}', det('orFold', [['1回{かい}', '1'], ['2回{かい}', '2'], ['三角{さんかく}', 'tri'], ['3回{かい}', '3'], ['まぜる', 'mix']]));
+  row('切{き}る 数{かず}', det('orCut', [['1つ', '1'], ['2つ', '2'], ['まぜる', 'mix']]));
+  head('レベルで かわる ところ：かぞえる');
+  row('三角形{さんかくけい}の 数{かず}', det('triR', [['2〜4こ', 1], ['5〜10こ', 2], ['8〜13こ', 3], ['14こ〜', 4]]));
+  row('線{せん}が とぎれた 図{ず}', det('triGap', [['なし', 'no'], ['あり', 'yes'], ['まぜる', 'mix']]));
+
+  head('そのほか');
+  row('かさねるの 板{いた}', seg([[R('線{せん}'), 'line'], [R('図形{ずけい}'), 'shape'], ['りょうほう', 'both']], CFG.ovKind, v => { CFG.ovKind = v; saveCfg(); }));
   row('かぞえるの こたえかた', seg([['4つから えらぶ', 'choice'], [R('数字{すうじ}を 入{い}れる'), 'input']], CFG.cans, v => { CFG.cans = v; saveCfg(); }));
+  row('問題{もんだい}の 数{かず}', stepper(CFG.count, 3, 20, v => { CFG.count = v; saveCfg(); sumText(); }).el);
+  row('はじめの 説明{せつめい}', seg([['出{だ}す', true], ['出{だ}さない', false]].map(([l, v]) => [R(l), v]), CFG.intro, v => { CFG.intro = v; saveCfg(); }));
+  row('効果音{こうかおん}', seg([['ON', true], ['OFF', false]], CFG.sound, v => { CFG.sound = v; saveCfg(); sumText(); }));
   const foot = H('div', { class: 'set-foot' });
   const close = H('button', { class: 'btn btn-primary', type: 'button' }, 'とじる');
   close.addEventListener('click', closeSettings);
   foot.appendChild(close); card.appendChild(foot);
+  card.scrollTop = keep;
 }
 
 /* ===== はじめ ===== */
 function init() {
   document.querySelectorAll('[data-r]').forEach(el => { el.innerHTML = R(el.innerHTML); });
   sumText(); startLevel();
-  document.querySelectorAll('.mode-card').forEach(b => b.addEventListener('click', () => { unlockAudio(); startMode(b.dataset.mode); }));
+  document.querySelectorAll('.mode-card').forEach(b => b.addEventListener('click', () => { unlockAudio(); openMode(b.dataset.mode); }));
   $('#btn-gear').addEventListener('click', () => { unlockAudio(); buildSettings(); $('#settings').hidden = false; });
   $('#settings').addEventListener('click', e => { if (e.target.id === 'settings') closeSettings(); });
   $('#btn-quit').addEventListener('click', () => { stopAnim(); show('start'); });
+  $('#intro-back').addEventListener('click', () => show('start'));
   $('#res-again').addEventListener('click', () => { unlockAudio(); startMode(SES.mode); });
   $('#res-home').addEventListener('click', () => show('start'));
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 }
 if (typeof document !== 'undefined') init();
-if (typeof module !== 'undefined') module.exports = { Overlap, Origami, Tri, Tile };
+if (typeof module !== 'undefined') module.exports = { Overlap, Origami, Tri };
 
 </script>
 </body>
