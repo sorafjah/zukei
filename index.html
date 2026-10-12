@@ -1029,7 +1029,7 @@ const Origami = (() => {
     const id = nid('mask');
     const mk = S('mask', { id, maskUnits: 'userSpaceOnUse', x: -2, y: -2, width: 5, height: 5 });
     mk.appendChild(S('rect', { x: -2, y: -2, width: 5, height: 5, fill: '#ffffff' }));
-    for (const h of holes) mk.appendChild(S('polygon', { points: pts(h), fill: '#000000' }));
+    for (const h of holes) mk.appendChild(S('polygon', { points: pts(h), fill: '#000000', stroke: '#000000', 'stroke-width': .006, 'stroke-linejoin': 'round' }));
     defs.appendChild(mk);
     return S('polygon', { points: pts(region), fill: fill || COL.paper, stroke: COL.paperEdge, 'stroke-width': .012, 'stroke-linejoin': 'round', mask: 'url(#' + id + ')' });
   }
@@ -1097,7 +1097,6 @@ const Origami = (() => {
           const sg = lineInPoly(P.regions[k], P.folds[k]);
           if (sg) sv.appendChild(S('line', { x1: sg[0][0], y1: sg[0][1], x2: sg[1][0], y2: sg[1][1], stroke: COL.ink, 'stroke-width': .014, 'stroke-dasharray': '.05 .035' }));
         }
-        if (withHoles && k === 0) for (const s of creases(P)) sv.appendChild(S('line', { x1: s[0][0], y1: s[0][1], x2: s[1][0], y2: s[1][1], stroke: COL.crease, 'stroke-width': .009, 'stroke-dasharray': '.03 .025' }));
       } else {
         const f = P.folds[flapIdx];
         sv.appendChild(paperG(defs, P.regions[flapIdx + 1], Hs[flapIdx + 1]));
@@ -1158,8 +1157,16 @@ const Origami = (() => {
     const P = gen(level, count) || gen(level, 1);
     $('#q-prompt').innerHTML = R('紙{かみ}を おって、しましまの ところを 切{き}りとったよ。ひろげると、どんな 形{かたち}に なるかな？');
     $('#q-fig').appendChild(stepsFig(P));
+    // ヒント：おり方の図の かわりに、おったり ひらいたり できる 紙を 出す
     hintBox('ヒント：紙{かみ}を おってみる', '切{き}る 前{まえ}の 紙{かみ}だよ。「おる」と「ひらく」で、おったり もどしたり できるよ。', tool => {
-      const v = makeView(P, false); tool.appendChild(v.svg); tool.appendChild(controls(v));
+      const fig = $('#q-fig'); stopAnim(); fig.innerHTML = '';
+      const v = makeView(P, false); fig.appendChild(v.svg);
+      tool.appendChild(controls(v));
+      const back = H('div', { class: 'ctrl' });
+      ctrlBtn(back, 'おり方{かた}の 図{ず}に もどる', () => { stopAnim(); fig.innerHTML = ''; fig.appendChild(stepsFig(P)); back.hidden = true; again.hidden = false; tool.querySelector('.ctrl').hidden = true; });
+      const again = H('div', { class: 'ctrl' }); again.hidden = true;
+      ctrlBtn(again, 'もういちど 紙{かみ}を おってみる', () => { stopAnim(); fig.innerHTML = ''; const v2 = makeView(P, false); fig.appendChild(v2.svg); const c2 = controls(v2); tool.querySelector('.ctrl').replaceWith(c2); back.hidden = false; again.hidden = true; });
+      tool.append(back, again);
     });
     const correct = P.opts.findIndex(o => o.why === 'ok');
     choices(P.opts.map(o => choiceSvg(o.h)), correct, i => {
