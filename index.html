@@ -1687,15 +1687,19 @@ const PR = { mode: 'mix', ans: false, seed: null, html: '' };
 function newSeed() { return String(1000 + Math.floor(Math.random() * 9000)); }
 function openPrint() { if (!PR.seed) PR.seed = newSeed(); buildPrint(); show('print'); }
 function buildPrint() {
-  const box = $('#print-body'); box.innerHTML = '';
+  const box = $('#print-body'); const keepY = window.scrollY; box.innerHTML = '';
   const row = (label, ctrl) => { const r = H('div', { class: 'set-row' }); r.appendChild(H('div', { class: 'set-label' }, R(label))); r.appendChild(ctrl); box.appendChild(r); };
   row('つかい方{かた}', useSeg('print'));
   row('問題{もんだい}の しゅるい', seg([['かさねる', 'overlap'], ['おりがみ', 'origami'], ['かぞえる', 'count'], ['まぜる', 'mix']], PR.mode, v => { PR.mode = v; buildPrint(); }));
   const lv = seg([1, 2, 3, 4].map(n => [String(n), n]), CFG.level, v => { setLevel(v); startLevel(); buildPrint(); });
   lv.classList.add('big');
   const lr = H('div', { class: 'set-row' }); lr.appendChild(H('div', { class: 'set-label' }, 'レベル')); lr.appendChild(lv);
-  if (!CFG.level) lr.appendChild(H('span', { class: 'ctrl-lab' }, R('（設定{せってい}で こまかく えらんだ 内容{ないよう}で 作{つく}るよ）')));
+  if (!CFG.level) lr.appendChild(H('span', { class: 'ctrl-lab' }, R('いまは こまかく えらんだ 設定{せってい}だよ')));
   box.appendChild(lr);
+  // こまかい 設定（アプリの 設定と 同じ。えらんだ しゅるいの ぶんだけ 出す）
+  const det = (k, items) => seg(items.map(([l, v]) => [R(l), v]), CFG.det[k], v => { setDet(k, v); startLevel(); buildPrint(); });
+  detRows(row, t => box.appendChild(H('h3', { class: 'set-h3' }, R(t))), det, PR.mode);
+  box.appendChild(H('h3', { class: 'set-h3' }, R('プリント')));
   row('答{こた}えの ページ', seg([['印刷{いんさつ}しない', false], ['印刷{いんさつ}する', true]].map(([l, v]) => [R(l), v]), PR.ans, v => { PR.ans = v; buildPrint(); }));
   const c = parseCode(makeCode(PR.mode, CFG.det, PR.seed));
   const info = H('div', { class: 'print-info' });
@@ -1729,6 +1733,7 @@ function buildPrint() {
     if (ok) msg.innerHTML = R('コピーしたよ。メモ帳{ちょう}などに はりつけて、.html で ほぞんしてください。');
     else if (navigator.clipboard) navigator.clipboard.writeText(PR.html).then(() => { msg.innerHTML = R('コピーしたよ。'); }, () => { msg.innerHTML = R('コピーできませんでした。'); });
   });
+  window.scrollTo(0, keepY);
 }
 
 /* --- プリントの 答え合わせ 画面 --- */
@@ -1759,6 +1764,26 @@ function startReview(c, probs, i) {
 }
 
 /* ===== 設定画面 ===== */
+// レベルで かわる ところ（設定画面と プリント画面で 共通）。which: 'all' か モード名
+function detRows(row, head, det, which) {
+  const on = m => which === 'all' || which === 'mix' || which === m;
+  if (on('overlap')) {
+    head('レベルで かわる ところ：かさねる');
+    row('線{せん}・形{かたち}の 数{かず}', det('ovN', [['少{すく}ない', 2], ['ふつう', 3], ['多{おお}い', 4]]));
+    row('右{みぎ}の 板{いた}の 動{うご}かし方{かた}', det('ovOp', [['そのまま', 'id'], ['うらがえす', 'flipX'], ['まわす', 'cw'], ['まぜる', 'mix']]));
+  }
+  if (on('origami')) {
+    head('レベルで かわる ところ：おりがみ');
+    row('おる 回数{かいすう}', det('orN', [['1回{かい}', '1'], ['2回{かい}', '2'], ['3回{かい}', '3'], ['まぜる', 'mix']]));
+    row('おり方{かた}（3回{かい}のときは 半分{はんぶん}・半分{はんぶん}・三角{さんかく}）', det('orShape', [['半分{はんぶん}', 'half'], ['三角{さんかく}', 'tri'], ['まぜる', 'mix']]));
+    row('切{き}る 数{かず}', det('orCut', [['1つ', '1'], ['2つ', '2'], ['まぜる', 'mix']]));
+  }
+  if (on('count')) {
+    head('レベルで かわる ところ：かぞえる');
+    row('三角形{さんかくけい}の 数{かず}', det('triR', [['2〜4こ', 1], ['4〜9こ', 2], ['8〜12こ', 3], ['12こ いじょう', 4]]));
+    row('線{せん}が とぎれた 図{ず}', det('triGap', [['なし', 'no'], ['あり', 'yes'], ['まぜる', 'mix']]));
+  }
+}
 function sumText() { $('#cfg-sum').innerHTML = R(CFG.count + 'もん　・　効果音{こうかおん} ' + (CFG.sound ? 'ON' : 'OFF')); }
 function startLevel() {
   const box = $('#start-level'); box.innerHTML = '';
@@ -1791,16 +1816,7 @@ function buildSettings() {
   if (!CFG.level) r0.appendChild(H('span', { class: 'ctrl-lab' }, R('いまは こまかく えらんだ 設定{せってい}だよ')));
   card.appendChild(H('p', { class: 'set-note' }, R('レベルを えらぶと、下{した}の「レベルで かわる ところ」が まとめて かわるよ。1つずつ えらぶことも できるよ。')));
 
-  head('レベルで かわる ところ：かさねる');
-  row('線{せん}・形{かたち}の 数{かず}', det('ovN', [['少{すく}ない', 2], ['ふつう', 3], ['多{おお}い', 4]]));
-  row('右{みぎ}の 板{いた}の 動{うご}かし方{かた}', det('ovOp', [['そのまま', 'id'], ['うらがえす', 'flipX'], ['まわす', 'cw'], ['まぜる', 'mix']]));
-  head('レベルで かわる ところ：おりがみ');
-  row('おる 回数{かいすう}', det('orN', [['1回{かい}', '1'], ['2回{かい}', '2'], ['3回{かい}', '3'], ['まぜる', 'mix']]));
-  row('おり方{かた}（3回{かい}のときは 半分{はんぶん}・半分{はんぶん}・三角{さんかく}）', det('orShape', [['半分{はんぶん}', 'half'], ['三角{さんかく}', 'tri'], ['まぜる', 'mix']]));
-  row('切{き}る 数{かず}', det('orCut', [['1つ', '1'], ['2つ', '2'], ['まぜる', 'mix']]));
-  head('レベルで かわる ところ：かぞえる');
-  row('三角形{さんかくけい}の 数{かず}', det('triR', [['2〜4こ', 1], ['4〜9こ', 2], ['8〜12こ', 3], ['12こ いじょう', 4]]));
-  row('線{せん}が とぎれた 図{ず}', det('triGap', [['なし', 'no'], ['あり', 'yes'], ['まぜる', 'mix']]));
+  detRows(row, head, det, 'all');
 
   head('そのほか');
   row('かぞえるの こたえかた', seg([['4つから えらぶ', 'choice'], [R('数字{すうじ}を 入{い}れる'), 'input']], CFG.cans, v => { CFG.cans = v; saveCfg(); }));
