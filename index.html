@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>図形のれんしゅう</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<style>
+/* 白い台紙の上に図を大きく置く、ドリル型の1画面アプリ（明るい単色テーマ） */
+:root{
+  --bg:#eef3f8; --panel:#ffffff; --ink:#1e2836; --sub:#566476; --line:#cfd8e3;
+  --accent:#2a6fdb; --accent-ink:#ffffff; --accent-soft:#e4eefc;
+  --ok:#157f55; --ok-soft:#e1f3ea; --ng:#b8492f; --ng-soft:#fbeae4;
+  --warm:#e07b16; --warm-soft:#fff4e6;
+  --font:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Meiryo",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:18px;line-height:1.7;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-text-size-adjust:100%}
+ruby rt{font-size:.5em;font-weight:400;letter-spacing:0}
+button{font-family:inherit;font-size:inherit;color:inherit;touch-action:manipulation}
+input{font-family:inherit;-webkit-user-select:text;user-select:text}
+svg{touch-action:manipulation}
+.screen{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:12px 40px}
+.topbar{display:flex;align-items:center;gap:12px;min-height:64px;margin-bottom:8px}
+.topbar h1{font-size:30px;margin:0;flex:1;line-height:1.6;text-wrap:balance}
+.icon-btn{width:56px;height:56px;border-radius:16px;border:2px solid var(--line);background:var(--panel);display:grid;place-items:center;cursor:pointer;flex:none}
+.icon-btn svg{width:32px;height:32px}
+.lead{font-size:20px;margin:0 0 16px;color:var(--sub)}
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (min-width:1000px){.modes{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:520px){.modes{grid-template-columns:minmax(0,1fr)}}
+.pick-level{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:10px 16px;margin-bottom:16px}
+.seg.big button{min-width:64px;min-height:56px;font-size:24px}
+.num-choice{font-size:42px;font-weight:700;line-height:1.3;padding:10px 0 6px;font-variant-numeric:tabular-nums}
+.num-choice small{font-size:22px;margin-left:4px}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
+.ctrl-lab{font-weight:700;color:var(--sub)}
+.tool .anim-svg{max-width:280px;margin:0 auto;display:block}
+.drag-on{cursor:grab}
+.mode-card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-align:center;transition:transform .1s,border-color .15s}
+.mode-card:active{transform:scale(.98);border-color:var(--accent)}
+.mode-card svg{width:100%;max-width:210px;height:auto}
+.mode-name{font-size:28px;font-weight:700;color:var(--accent);line-height:1.4}
+.mode-desc{font-size:17px;color:var(--sub);line-height:1.9}
+.cfg-sum{margin-top:20px;color:var(--sub);font-size:16px;text-align:center}
+.btn{min-height:52px;min-width:52px;border-radius:14px;border:2px solid var(--accent);padding:8px 22px;font-size:20px;font-weight:700;cursor:pointer;line-height:1.6}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-sub{background:var(--panel);color:var(--accent)}
+.btn-small{min-height:44px;font-size:17px;padding:4px 14px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.choice:focus-visible,.mode-card:focus-visible,.icon-btn:focus-visible,.seg button:focus-visible,.st-btn:focus-visible,.pill-btn:focus-visible{outline:3px solid #f2a33a;outline-offset:2px}
+.q-title{flex:1;font-size:22px;font-weight:700;min-width:0}
+.lv{font-size:15px;color:var(--sub);font-weight:400;margin-left:6px}
+.q-prog{font-size:19px;font-weight:700;color:var(--sub);font-variant-numeric:tabular-nums}
+.pill-btn{min-height:48px;min-width:48px;padding:4px 16px;border-radius:999px;border:2px solid var(--line);background:var(--panel);font-weight:700;cursor:pointer}
+.q-body{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:900px) and (orientation:landscape){.q-body{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start}}
+.q-main,.q-side{min-width:0}
+.prompt{font-size:21px;font-weight:700;margin:0 0 12px;line-height:2.1}
+.fig{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;min-height:160px}
+.fig svg{display:block;max-width:100%;height:auto}
+.wide-svg{width:100%;max-width:560px}
+.anim-svg{width:100%;max-width:340px}
+.tri-svg{width:100%;max-width:400px}
+.extra{margin-top:12px;display:flex;flex-direction:column;gap:12px}
+.ans-lead{margin:0 0 10px;font-size:18px;color:var(--sub)}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{position:relative;background:var(--panel);border:3px solid var(--line);border-radius:16px;padding:8px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-height:44px}
+.choice .lab{font-size:22px;font-weight:700;align-self:flex-start;line-height:1.3;padding-left:4px}
+.choice svg{width:100%;max-width:170px;height:auto}
+.choice:disabled{cursor:default;color:inherit;opacity:1}
+.choice.is-correct{border-color:var(--ok);background:var(--ok-soft)}
+.choice.is-wrong{border-color:var(--ng);background:var(--ng-soft)}
+.choice.is-dim{opacity:.5}
+.badge{position:absolute;top:6px;right:8px;font-size:16px;font-weight:700;padding:2px 10px;border-radius:999px;color:#fff;line-height:1.5}
+.badge.ok{background:var(--ok)}.badge.ng{background:var(--ng)}
+.fb{margin-top:16px;border-radius:16px;padding:14px 18px;border:2px solid}
+.fb.ok{background:var(--ok-soft);border-color:var(--ok)}
+.fb.ng{background:var(--ng-soft);border-color:var(--ng)}
+.fb-head{font-size:26px;font-weight:700}
+.fb.ok .fb-head{color:var(--ok)}.fb.ng .fb-head{color:var(--ng)}
+.fb p{margin:6px 0;line-height:2}
+.fb-btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;justify-content:flex-end}
+.stepper{display:inline-flex;align-items:stretch;gap:8px}
+.st-btn{width:56px;height:56px;border-radius:14px;border:2px solid var(--accent);background:var(--panel);color:var(--accent);font-size:24px;cursor:pointer;line-height:1}
+.st-inp{width:84px;height:56px;border-radius:14px;border:2px solid var(--line);text-align:center;font-size:28px;font-weight:700;color:var(--ink);background:#fff;font-variant-numeric:tabular-nums}
+.st-btn:disabled,.st-inp:disabled{opacity:.5}
+.ans-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.unit{font-size:22px;font-weight:700}
+.steps{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px}
+.step{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:16px;font-weight:700}
+.step svg{width:110px}
+.step.big svg{width:170px}
+.step-arrow{font-size:22px;color:var(--sub)}
+.tool{background:var(--panel);border:2px dashed var(--line);border-radius:16px;padding:12px 14px}
+.tool p{margin:0 0 6px}
+.tool-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.found-n{font-weight:700;color:var(--accent);font-size:22px;font-variant-numeric:tabular-nums}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.thumb{display:flex;flex-direction:column;align-items:center;font-size:14px;font-weight:700;border:2px solid var(--line);border-radius:10px;padding:2px 4px;background:#fff;font-variant-numeric:tabular-nums}
+.thumb svg{width:64px;height:64px}
+.thumb.missed{border-color:var(--warm);border-style:dashed}
+.big-count{width:100%;text-align:center;font-size:26px;font-weight:700;color:var(--accent);min-height:1.6em;font-variant-numeric:tabular-nums}
+.msg{min-height:2em;font-weight:700;color:var(--accent);margin:4px 0 0}
+.sample{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:16px;font-weight:700}
+.sample-row{display:flex;gap:12px;align-items:flex-end}
+.build svg{display:block;margin:6px auto 0}
+.res-card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:28px 20px;text-align:center;margin-top:12px}
+.res-score{font-size:30px;font-weight:700;margin:0}
+.res-score b{font-size:56px;color:var(--accent);font-variant-numeric:tabular-nums}
+.res-msg{font-size:22px;margin:8px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0}
+.chip{min-width:64px;padding:4px 10px;border-radius:12px;font-weight:700;border:2px solid;font-variant-numeric:tabular-nums}
+.chip.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.chip.ng{color:var(--ng);border-color:var(--ng);background:var(--ng-soft)}
+.res-btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px}
+.modal{position:fixed;inset:0;background:rgba(20,30,45,.45);display:grid;place-items:center;padding:16px;z-index:10}
+.modal-card{background:var(--panel);border-radius:20px;max-width:680px;width:100%;max-height:calc(100% - 32px);overflow:auto;padding:20px 22px}
+.modal-card h2{margin:0 0 4px;font-size:26px}
+.set-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.set-label{font-weight:700;font-size:19px}
+.seg{display:inline-flex;gap:6px;flex-wrap:wrap}
+.seg button{min-height:48px;min-width:64px;padding:4px 14px;border-radius:12px;border:2px solid var(--accent);background:#fff;color:var(--accent);font-weight:700;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.table-wrap{overflow-x:auto;padding:4px 0 8px;border-bottom:1px solid var(--line)}
+.lv-table{width:100%;border-collapse:collapse;font-size:15px;min-width:520px}
+.lv-table th,.lv-table td{border:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top;line-height:1.9}
+.lv-table th{background:var(--accent-soft)}
+.lv-table tr.cur td{background:#fff3dd;font-weight:700}
+.set-foot{display:flex;justify-content:flex-end;margin-top:16px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <section id="scr-start" class="screen">
+    <header class="topbar">
+      <h1 data-r>図形{ずけい}の れんしゅう</h1>
+      <button id="btn-gear" class="icon-btn" type="button" aria-label="せってい">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#566476" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </button>
+    </header>
+    <div class="pick-level">
+      <span class="set-label">レベル</span>
+      <div id="start-level"></div>
+    </div>
+    <p class="lead" data-r>やりたい れんしゅうを えらんでね。</p>
+    <div class="modes">
+      <button class="mode-card" type="button" data-mode="overlap">
+        <svg viewBox="0 0 130 64" aria-hidden="true">
+          <rect x="3" y="5" width="54" height="54" rx="7" fill="#fff" stroke="#c9d2de" stroke-width="2"/>
+          <g fill="#9aa6b5"><circle cx="12" cy="14" r="2.2"/><circle cx="30" cy="14" r="2.2"/><circle cx="48" cy="14" r="2.2"/><circle cx="12" cy="32" r="2.2"/><circle cx="30" cy="32" r="2.2"/><circle cx="48" cy="32" r="2.2"/><circle cx="12" cy="50" r="2.2"/><circle cx="30" cy="50" r="2.2"/><circle cx="48" cy="50" r="2.2"/></g>
+          <line x1="12" y1="14" x2="30" y2="32" stroke="#2a6fdb" stroke-width="4" stroke-linecap="round"/>
+          <line x1="12" y1="50" x2="30" y2="50" stroke="#2a6fdb" stroke-width="4" stroke-linecap="round"/>
+          <text x="65" y="40" font-size="22" font-weight="700" text-anchor="middle" fill="#566476">+</text>
+          <rect x="73" y="5" width="54" height="54" rx="7" fill="#fff" stroke="#c9d2de" stroke-width="2"/>
+          <g fill="#9aa6b5"><circle cx="82" cy="14" r="2.2"/><circle cx="100" cy="14" r="2.2"/><circle cx="118" cy="14" r="2.2"/><circle cx="82" cy="32" r="2.2"/><circle cx="100" cy="32" r="2.2"/><circle cx="118" cy="32" r="2.2"/><circle cx="82" cy="50" r="2.2"/><circle cx="100" cy="50" r="2.2"/><circle cx="118" cy="50" r="2.2"/></g>
+          <line x1="100" y1="14" x2="100" y2="32" stroke="#2a6fdb" stroke-width="4" stroke-linecap="round"/>
+          <line x1="100" y1="32" x2="118" y2="50" stroke="#2a6fdb" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <span class="mode-name">かさねる</span>
+        <span class="mode-desc" data-r>2まいの 板{いた}を 重{かさ}ねた 形{かたち}</span>
+      </button>
+      <button class="mode-card" type="button" data-mode="origami">
+        <svg viewBox="0 0 130 64" aria-hidden="true">
+          <rect x="6" y="6" width="26" height="52" fill="#ffb866" stroke="#d5862c" stroke-width="2"/>
+          <path d="M6 22 l9 10 l-9 10 z" fill="#fff"/>
+          <text x="52" y="38" font-size="20" font-weight="700" text-anchor="middle" fill="#566476">→</text>
+          <rect x="72" y="6" width="52" height="52" fill="#ffb866" stroke="#d5862c" stroke-width="2"/>
+          <path d="M72 22 l9 10 l-9 10 z M124 22 l-9 10 l9 10 z" fill="#fff"/>
+          <line x1="98" y1="6" x2="98" y2="58" stroke="#8a5a1e" stroke-width="1.5" stroke-dasharray="4 3"/>
+        </svg>
+        <span class="mode-name">おりがみ</span>
+        <span class="mode-desc" data-r>おって 切{き}った 紙{かみ}を ひろげた 形{かたち}</span>
+      </button>
+      <button class="mode-card" type="button" data-mode="count">
+        <svg viewBox="0 0 130 64" aria-hidden="true">
+          <path d="M34 5 L6 59 L62 59 Z" fill="#e4eefc" stroke="#1e2836" stroke-width="2.5" stroke-linejoin="round"/>
+          <line x1="34" y1="5" x2="26" y2="59" stroke="#1e2836" stroke-width="2.5"/>
+          <line x1="34" y1="5" x2="44" y2="59" stroke="#1e2836" stroke-width="2.5"/>
+          <rect x="78" y="10" width="22" height="22" fill="#d9e0ea"/><path d="M78 10 L78 32 L100 32 Z" fill="#2c3d58"/>
+          <rect x="100" y="10" width="22" height="22" fill="#d9e0ea"/><path d="M100 32 L122 32 L122 10 Z" fill="#2c3d58"/>
+          <rect x="78" y="32" width="22" height="22" fill="#d9e0ea"/><path d="M78 32 L100 32 L100 54 Z" fill="#2c3d58"/>
+        </svg>
+        <span class="mode-name">かぞえる</span>
+        <span class="mode-desc" data-r>三角形{さんかくけい}や カードの 数{かず}</span>
+      </button>
+      <button class="mode-card" type="button" data-mode="mix">
+        <svg viewBox="0 0 130 64" aria-hidden="true">
+          <rect x="4" y="16" width="32" height="32" rx="5" fill="#fff" stroke="#c9d2de" stroke-width="2"/>
+          <line x1="11" y1="23" x2="29" y2="41" stroke="#2a6fdb" stroke-width="3.5" stroke-linecap="round"/>
+          <text x="42" y="38" font-size="14" font-weight="700" text-anchor="middle" fill="#566476">→</text>
+          <rect x="50" y="16" width="32" height="32" fill="#ffb866" stroke="#d5862c" stroke-width="2"/>
+          <circle cx="66" cy="32" r="6" fill="#fff"/>
+          <text x="88" y="38" font-size="14" font-weight="700" text-anchor="middle" fill="#566476">→</text>
+          <path d="M111 16 L95 48 L127 48 Z" fill="#e4eefc" stroke="#1e2836" stroke-width="2.5" stroke-linejoin="round"/>
+          <line x1="111" y1="16" x2="111" y2="48" stroke="#1e2836" stroke-width="2.5"/>
+        </svg>
+        <span class="mode-name">3つとも</span>
+        <span class="mode-desc" data-r>かさねる・おりがみ・かぞえるを じゅんばんに</span>
+      </button>
+    </div>
+    <p class="cfg-sum" id="cfg-sum"></p>
+  </section>
+
+  <section id="scr-q" class="screen" hidden>
+    <header class="topbar">
+      <button id="btn-quit" class="pill-btn" type="button">もどる</button>
+      <div class="q-title" id="q-title"></div>
+      <div class="q-prog" id="q-prog"></div>
+    </header>
+    <div class="q-body">
+      <div class="q-main">
+        <p class="prompt" id="q-prompt"></p>
+        <div class="fig" id="q-fig"></div>
+        <div class="extra" id="q-extra"></div>
+      </div>
+      <div class="q-side">
+        <div id="q-answer"></div>
+        <div id="q-feedback" class="fb" hidden aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="scr-result" class="screen" hidden>
+    <header class="topbar"><h1 data-r>けっか</h1></header>
+    <div class="res-card">
+      <p class="res-score" id="res-score"></p>
+      <p class="res-msg" id="res-msg"></p>
+      <div class="chips" id="res-chips"></div>
+      <div class="res-btns">
+        <button id="res-again" class="btn btn-primary" type="button">もういちど</button>
+        <button id="res-home" class="btn btn-sub" type="button" data-r>はじめの 画面{がめん}へ</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="settings" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ===== 共通の道具 ===== */
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+function S(tag, attrs, kids) {
+  const e = document.createElementNS(NS, tag);
+  if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (kids) for (const c of kids) if (c) e.appendChild(c);
+  return e;
+}
+function H(tag, attrs, html) {
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) { if (k === 'class') e.className = attrs[k]; else e.setAttribute(k, attrs[k]); }
+  if (html != null) e.innerHTML = html;
+  return e;
+}
+function T(x, y, str, attrs) { const t = S('text', Object.assign({ x, y }, attrs || {})); t.textContent = str; return t; }
+// 「漢字{よみ}」を ruby にする
+const R = s => String(s).replace(/([一-鿿々]+)\{([^}]+)\}/g, '<ruby>$1<rt>$2</rt></ruby>');
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let uid = 0; const nid = p => p + '-' + (++uid);
+const KANA = ['ア', 'イ', 'ウ', 'エ'];
+const COL = {
+  ink: '#1e2836', sub: '#566476', dot: '#9aa6b5', faint: '#c3ccd8', boardEdge: '#c9d2de',
+  blue: '#2a6fdb', orange: '#e07b16', accent: '#2a6fdb',
+  paper: '#ffb866', paperEdge: '#d5862c', crease: '#8a5a1e',
+  card: '#d9e0ea', cardDark: '#2c3d58'
+};
+const pts = poly => poly.map(p => (+p[0].toFixed(4)) + ',' + (+p[1].toFixed(4))).join(' ');
+function arrowHead(tip, ang, size, color) {
+  const a1 = ang + Math.PI * 0.82, a2 = ang - Math.PI * 0.82;
+  return S('polygon', { points: pts([tip, [tip[0] + size * Math.cos(a1), tip[1] + size * Math.sin(a1)], [tip[0] + size * Math.cos(a2), tip[1] + size * Math.sin(a2)]]), fill: color });
+}
+
+/* ===== 図形の計算 ===== */
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1];
+const crs = (a, b) => a[0] * b[1] - a[1] * b[0];
+function polyArea(p) { let s = 0; for (let i = 0; i < p.length; i++) { const a = p[i], b = p[(i + 1) % p.length]; s += a[0] * b[1] - b[0] * a[1]; } return s / 2; }
+function centroid(p) { let x = 0, y = 0; for (const q of p) { x += q[0]; y += q[1]; } return [x / p.length, y / p.length]; }
+function clipHalf(poly, fn) {
+  const out = []; const n = poly.length;
+  for (let i = 0; i < n; i++) {
+    const a = poly[i], b = poly[(i + 1) % n]; const fa = fn(a), fb = fn(b);
+    if (fa >= 0) out.push(a);
+    if ((fa >= 0) !== (fb >= 0)) { const t = fa / (fa - fb); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
+  }
+  return out;
+}
+function clipConvex(poly, region) {
+  const sg = Math.sign(polyArea(region)); let out = poly; const n = region.length;
+  for (let i = 0; i < n && out.length >= 3; i++) {
+    const a = region[i], b = region[(i + 1) % n]; const e = sub(b, a);
+    out = clipHalf(out, p => sg * crs(e, sub(p, a)));
+  }
+  return out.length >= 3 ? out : [];
+}
+function pip(p, poly) {
+  let c = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if (((a[1] > p[1]) !== (b[1] > p[1])) && (p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0])) c = !c;
+  }
+  return c;
+}
+const sideOf = (p, f) => crs(f.d, sub(p, f.o));
+function reflectP(p, f) { const v = sub(p, f.o); const a = dot(v, f.d); return [f.o[0] + 2 * a * f.d[0] - v[0], f.o[1] + 2 * a * f.d[1] - v[1]]; }
+
+/* ===== 設定 ===== */
+const DEF = { level: 1, count: 5, sound: true, ctype: 'both', cans: 'choice' };
+function loadCfg() {
+  try { const s = JSON.parse(localStorage.getItem('zukei-renshu-cfg') || 'null'); return Object.assign({}, DEF, s || {}); }
+  catch (e) { return Object.assign({}, DEF); }
+}
+let CFG = loadCfg();
+function saveCfg() { try { localStorage.setItem('zukei-renshu-cfg', JSON.stringify(CFG)); } catch (e) { /* 使えない環境では保存しない */ } }
+
+/* ===== 音 ===== */
+let AC = null;
+function unlockAudio() {
+  try {
+    if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (C) AC = new C(); }
+    if (AC && AC.state === 'suspended') AC.resume();
+  } catch (e) { /* 音が使えなくても止めない */ }
+}
+function tone(f, t0, d, v, type) {
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(v, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+  o.connect(g); g.connect(AC.destination); o.start(t0); o.stop(t0 + d + 0.05);
+}
+function sfx(k) {
+  if (!CFG.sound || !AC) return;
+  try {
+    const t = AC.currentTime + 0.01;
+    if (k === 'ok') { tone(784, t, .18, .16); tone(1047, t + .14, .3, .16); }
+    else if (k === 'ng') { tone(392, t, .3, .07, 'triangle'); }
+    else if (k === 'tap') { tone(660, t, .07, .05); }
+    else if (k === 'find') { tone(880, t, .1, .1); tone(1175, t + .08, .15, .1); }
+    else if (k === 'done') { [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * .12, .25, .12)); }
+  } catch (e) { /* 無視 */ }
+}
+
+/* ===== アニメーション（デルタタイム方式） ===== */
+const REDUCE = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+let curAnim = null;
+function stopAnim() { if (curAnim) { curAnim.stop = true; curAnim = null; } }
+function runSeq(steps, onEnd) {
+  stopAnim();
+  if (!steps.length) { if (onEnd) onEnd(); return; }
+  const me = { stop: false }; curAnim = me;
+  const k = REDUCE ? 0.4 : 1;
+  let i = 0, el = 0, last = null, started = false;
+  function frame(ts) {
+    if (me.stop) return;
+    if (last === null) last = ts;
+    const dt = Math.min(64, ts - last); last = ts;
+    const st = steps[i];
+    if (!started) { started = true; if (st.start) st.start(); }
+    el += dt;
+    const d = (st.dur || 0) * 1000 * k;
+    const t = d > 0 ? Math.min(1, el / d) : 1;
+    if (st.update) st.update(st.linear ? t : ease(t));
+    if (t >= 1) {
+      if (st.end) st.end();
+      i++; el = 0; started = false;
+      if (i >= steps.length) { if (curAnim === me) curAnim = null; if (onEnd) onEnd(); return; }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ===== 画面の部品 ===== */
+function stepper(val, min, max, onChange) {
+  const el = H('div', { class: 'stepper' });
+  const dn = H('button', { class: 'st-btn', type: 'button', 'aria-label': 'へらす' }, '▽');
+  const inp = H('input', { class: 'st-inp', type: 'text', inputmode: 'numeric', pattern: '[0-9]*', id: nid('num'), value: String(val), 'aria-label': 'かず' });
+  const up = H('button', { class: 'st-btn', type: 'button', 'aria-label': 'ふやす' }, '△');
+  const parse = () => parseInt(String(inp.value).replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 65248)), 10);
+  const set = v => { if (isNaN(v)) v = val; v = Math.max(min, Math.min(max, v)); val = v; inp.value = String(v); if (onChange) onChange(v); };
+  dn.addEventListener('click', () => { unlockAudio(); set(val - 1); sfx('tap'); });
+  up.addEventListener('click', () => { unlockAudio(); set(val + 1); sfx('tap'); });
+  inp.addEventListener('change', () => set(parse()));
+  inp.addEventListener('focus', () => { try { inp.select(); } catch (e) { } });
+  el.append(dn, inp, up);
+  return { el, get: () => { set(parse()); return val; }, lock: () => { dn.disabled = up.disabled = inp.disabled = true; } };
+}
+function seg(items, cur, onChange) {
+  const el = H('div', { class: 'seg', role: 'group' });
+  const bs = items.map(([label, v]) => {
+    const b = H('button', { type: 'button', 'aria-pressed': String(v === cur) }, label);
+    b.addEventListener('click', () => { unlockAudio(); bs.forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); onChange(v); sfx('tap'); });
+    el.appendChild(b); return b;
+  });
+  return el;
+}
+
+/* ===== 画面の切りかえと進行 ===== */
+const MODE_NAME = { overlap: 'かさねる', origami: 'おりがみ', count: 'かぞえる', mix: '3つとも' };
+const MIX_ORDER = ['overlap', 'origami', 'count'];
+let SES = null;
+function show(name) {
+  for (const s of ['start', 'q', 'result']) document.getElementById('scr-' + s).hidden = (s !== name);
+  window.scrollTo(0, 0);
+}
+function startMode(mode) {
+  SES = { mode, level: CFG.level, total: CFG.count, idx: 0, results: [], cn: 0 };
+  show('q'); renderQ();
+}
+function renderQ() {
+  stopAnim();
+  const m = SES.mode === 'mix' ? MIX_ORDER[SES.idx % 3] : SES.mode, L = SES.level;
+  $('#q-title').innerHTML = (SES.mode === 'mix' ? '3つとも ・ ' : '') + MODE_NAME[m] + '<span class="lv">レベル' + L + '</span>';
+  $('#q-prog').textContent = (SES.idx + 1) + ' / ' + SES.total;
+  const fb = $('#q-feedback'); fb.hidden = true; fb.innerHTML = '';
+  $('#q-answer').innerHTML = ''; $('#q-fig').innerHTML = ''; $('#q-extra').innerHTML = '';
+  if (m === 'overlap') Overlap.run(L);
+  else if (m === 'origami') Origami.run(L);
+  else {
+    const t = CFG.ctype === 'both' ? (SES.cn % 2 === 0 ? 'tri' : 'tile') : CFG.ctype;
+    SES.cn++;
+    if (t === 'tri') Tri.run(L); else Tile.run(L);
+  }
+}
+function hintBox(btnLabel, note, build) {
+  const ex = $('#q-extra');
+  const b = H('button', { class: 'btn btn-sub', type: 'button' }, R(btnLabel));
+  const tool = H('div', { class: 'tool' }); tool.hidden = true;
+  if (note) tool.appendChild(H('p', null, R(note)));
+  ex.append(b, tool);
+  b.addEventListener('click', () => { unlockAudio(); b.hidden = true; tool.hidden = false; build(tool); });
+}
+function ctrlBtn(box, label, fn) {
+  const b = H('button', { class: 'btn btn-sub btn-small', type: 'button' }, R(label));
+  b.addEventListener('click', () => { unlockAudio(); sfx('tap'); fn(); });
+  box.appendChild(b); return b;
+}
+function answered(ok) { SES.results.push(ok); sfx(ok ? 'ok' : 'ng'); }
+function feedback(o) {
+  const fb = $('#q-feedback');
+  fb.hidden = false; fb.className = 'fb ' + (o.ok ? 'ok' : 'ng');
+  fb.innerHTML = '<div class="fb-head">' + (o.ok ? '○ せいかい！' : '× ちがったよ') + '</div>' +
+    (o.head ? '<p><b>' + R(o.head) + '</b></p>' : '') + '<p>' + R(o.body) + '</p><div class="fb-btns"></div>';
+  const btns = fb.querySelector('.fb-btns');
+  if (o.replay) {
+    const b = H('button', { class: 'btn btn-sub', type: 'button' }, R('もういちど 見{み}る'));
+    b.addEventListener('click', () => { unlockAudio(); o.replay(); });
+    btns.appendChild(b);
+  }
+  const last = SES.idx + 1 >= SES.total;
+  const nx = H('button', { class: 'btn btn-primary', type: 'button' }, last ? R('けっかを 見{み}る') : 'つぎへ ▶');
+  nx.addEventListener('click', () => { unlockAudio(); SES.idx++; if (SES.idx >= SES.total) showResult(); else { renderQ(); window.scrollTo(0, 0); } });
+  btns.appendChild(nx);
+  if (window.matchMedia && !window.matchMedia('(min-width:900px) and (orientation:landscape)').matches) {
+    setTimeout(() => { try { fb.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'nearest' }); } catch (e) { } }, 50);
+  }
+}
+function countAnswer(n, unit, onAnswer) {
+  if (CFG.cans === 'input') { numberAnswer(unit, onAnswer); return; }
+  const d = [];
+  if (n - 1 > 0) d.push(n - 1);
+  d.push(n + 1);
+  for (const x of shuffle([n - 2, n + 2, n - 3, n + 3, n + 4])) { if (d.length >= 3) break; if (x > 0 && x !== n && !d.includes(x)) d.push(x); }
+  const vals = [n].concat(d.slice(0, 3)).sort((a, b) => a - b);
+  const nodes = vals.map(x => H('span', { class: 'num-choice' }, x + '<small>' + unit + '</small>'));
+  choices(nodes, vals.indexOf(n), i => onAnswer(vals[i]));
+}
+function choices(svgs, correct, onDone) {
+  const box = $('#q-answer');
+  box.appendChild(H('p', { class: 'ans-lead' }, R('こたえを えらんでね。')));
+  const wrap = H('div', { class: 'choices' });
+  let done = false;
+  const btns = svgs.map((sv, i) => {
+    const b = H('button', { class: 'choice', type: 'button', 'aria-label': KANA[i] });
+    b.appendChild(H('span', { class: 'lab' }, KANA[i])); b.appendChild(sv);
+    b.addEventListener('click', () => {
+      if (done) return; done = true; unlockAudio();
+      btns.forEach((x, j) => {
+        x.disabled = true;
+        if (j === correct) { x.classList.add('is-correct'); x.appendChild(H('span', { class: 'badge ok' }, '○ せいかい')); }
+        else if (j === i) { x.classList.add('is-wrong'); x.appendChild(H('span', { class: 'badge ng' }, '× えらんだ')); }
+        else x.classList.add('is-dim');
+      });
+      onDone(i);
+    });
+    wrap.appendChild(b); return b;
+  });
+  box.appendChild(wrap);
+}
+function numberAnswer(unit, onSubmit) {
+  const box = $('#q-answer');
+  box.appendChild(H('p', { class: 'ans-lead' }, R('数{かず}を 入{い}れて、「こたえる」を おしてね。')));
+  const row = H('div', { class: 'ans-row' });
+  const st = stepper(0, 0, 60);
+  const go = H('button', { class: 'btn btn-primary', type: 'button' }, 'こたえる');
+  row.append(st.el, H('span', { class: 'unit' }, unit), go);
+  box.appendChild(row);
+  go.addEventListener('click', () => { unlockAudio(); const v = st.get(); st.lock(); go.disabled = true; onSubmit(v); });
+}
+function showResult() {
+  stopAnim();
+  const n = SES.results.filter(Boolean).length, t = SES.total;
+  $('#res-score').innerHTML = R(t + 'もん中{ちゅう} <b>' + n + '</b>もん せいかい');
+  $('#res-msg').innerHTML = R(n === t ? 'ぜんぶ せいかい！ すごいね。' : n >= t * 0.6 ? 'よく できたね。' : 'もういちど チャレンジしてみてね。');
+  const ch = $('#res-chips'); ch.innerHTML = '';
+  SES.results.forEach((ok, i) => ch.appendChild(H('span', { class: 'chip ' + (ok ? 'ok' : 'ng') }, (i + 1) + ' ' + (ok ? '○' : '×'))));
+  sfx('done'); show('result');
+}
+
+/* ======================================================
+   モード1 かさねる
+   ====================================================== */
+const Overlap = (() => {
+  const SEGS = [];
+  for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) {
+    if (x < 2) SEGS.push([x, y, x + 1, y]);
+    if (y < 2) SEGS.push([x, y, x, y + 1]);
+    if (x < 2 && y < 2) { SEGS.push([x, y, x + 1, y + 1]); SEGS.push([x + 1, y, x, y + 1]); }
+  }
+  const key = s => { let [a, b, c, d] = s; if (a > c || (a === c && b > d)) [a, b, c, d] = [c, d, a, b]; return a + ',' + b + ',' + c + ',' + d; };
+  const TF = {
+    id: p => p, flipX: ([x, y]) => [2 - x, y], flipY: ([x, y]) => [x, 2 - y],
+    cw: ([x, y]) => [2 - y, x], ccw: ([x, y]) => [y, 2 - x], r180: ([x, y]) => [2 - x, 2 - y]
+  };
+  const tf = (segs, f) => segs.map(s => { const p = f([s[0], s[1]]), q = f([s[2], s[3]]); return [p[0], p[1], q[0], q[1]]; });
+  const keysOf = segs => [...new Set(segs.map(key))].sort();
+  const fromKeys = ks => ks.map(k => k.split(',').map(Number));
+  const CELL = 50, M = 15, BS = CELL * 2 + M * 2;
+
+  function gen(level) {
+    const k = level === 1 ? 2 : 3;
+    const op = level === 3 ? 'flipX' : level === 4 ? 'cw' : 'id';
+    let lastGood = null;
+    for (let tries = 0; tries < 800; tries++) {
+      const pool = shuffle(SEGS.slice());
+      const A = pool.slice(0, k); const Ak = new Set(A.map(key));
+      const rest = pool.slice(k).filter(s => !Ak.has(key(tf([s], TF[op])[0])));
+      if (rest.length < k) continue;
+      const B = rest.slice(0, k);
+      const TB = tf(B, TF[op]);
+      const C = keysOf(A.concat(TB));
+      if (C.length !== 2 * k) continue;
+      const Cs = fromKeys(C);
+      const notC = SEGS.filter(s => !C.includes(key(s)));
+      const cands = [];
+      const add = (segs, why) => cands.push({ ks: keysOf(segs), why });
+      if (op !== 'id') {
+        add(A.concat(B), 'noturn');
+        if (op === 'flipX') add(A.concat(tf(B, TF.flipY)), 'flipY');
+        else { add(A.concat(tf(B, TF.ccw)), 'ccw'); add(A.concat(tf(B, TF.r180)), 'r180'); }
+      }
+      const d1 = key(pick(TB));
+      add(Cs.filter(s => key(s) !== d1), 'drop');
+      add(Cs.concat([pick(notC)]), 'extra');
+      const d2 = key(pick(TB));
+      add(Cs.filter(s => key(s) !== d2).concat([pick(notC)]), 'shift');
+      const nt = cands.filter(c => c.why === 'noturn');
+      const order = op === 'id' ? shuffle(cands.slice()) : nt.concat(shuffle(cands.filter(c => c.why !== 'noturn')));
+      const seen = new Set([C.join('|')]); const picked = [];
+      for (const c of order) {
+        const s = c.ks.join('|'); if (seen.has(s) || c.ks.length < 2) continue;
+        seen.add(s); picked.push(c); if (picked.length === 3) break;
+      }
+      if (picked.length < 3) continue;
+      const P = { A, B, op, opts: shuffle([{ ks: C, why: 'ok' }].concat(picked)) };
+      lastGood = P;
+      if (op !== 'id' && !picked.some(c => c.why === 'noturn')) continue;
+      return P;
+    }
+    return lastGood;
+  }
+
+  function board(segs, o) {
+    o = o || {};
+    const g = S('g', { transform: 'translate(' + (o.x || 0) + ' ' + (o.y || 0) + ')' });
+    if (o.bg !== false) g.appendChild(S('rect', { x: 0, y: 0, width: BS, height: BS, rx: 10, fill: '#ffffff', stroke: COL.boardEdge, 'stroke-width': 2 }));
+    if (o.outline) { const a = { x: 0, y: 0, width: BS, height: BS, rx: 10, fill: 'none', stroke: o.outline, 'stroke-width': 2 }; if (!o.outlineSolid) a['stroke-dasharray'] = '6 5'; g.appendChild(S('rect', a)); }
+    if (o.dots !== false) for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) g.appendChild(S('circle', { cx: M + i * CELL, cy: M + j * CELL, r: 3.5, fill: COL.dot }));
+    for (const s of segs) {
+      const a = { x1: M + s[0] * CELL, y1: M + s[1] * CELL, x2: M + s[2] * CELL, y2: M + s[3] * CELL, stroke: o.color || COL.ink, 'stroke-width': 6, 'stroke-linecap': 'round' };
+      if (o.dash) a['stroke-dasharray'] = o.dash;
+      g.appendChild(S('line', a));
+    }
+    return g;
+  }
+  const BX = 215, AX = 5, BY = 45;
+  function opIcon(sv, op) {
+    const cx = BX + BS / 2;
+    if (op === 'flipX') {
+      sv.appendChild(S('path', { d: 'M' + (cx - 42) + ' 26 Q' + cx + ' 4 ' + (cx + 42) + ' 26', fill: 'none', stroke: COL.orange, 'stroke-width': 4, 'stroke-linecap': 'round' }));
+      sv.appendChild(arrowHead([cx + 44, 27], Math.atan2(22, 42), 13, COL.orange));
+      sv.appendChild(arrowHead([cx - 44, 27], Math.atan2(22, -42), 13, COL.orange));
+    } else if (op === 'cw') {
+      const c = [cx, 22], r = 14, a0 = 200 * Math.PI / 180, a1 = 470 * Math.PI / 180;
+      const p0 = [c[0] + r * Math.cos(a0), c[1] + r * Math.sin(a0)], p1 = [c[0] + r * Math.cos(a1), c[1] + r * Math.sin(a1)];
+      sv.appendChild(S('path', { d: 'M' + p0[0] + ' ' + p0[1] + ' A' + r + ' ' + r + ' 0 1 1 ' + p1[0] + ' ' + p1[1], fill: 'none', stroke: COL.orange, 'stroke-width': 4, 'stroke-linecap': 'round' }));
+      sv.appendChild(arrowHead(p1, a1 + Math.PI / 2, 12, COL.orange));
+      sv.appendChild(T(cx + 24, 30, '90°', { 'font-size': 20, 'font-weight': 700, fill: COL.orange }));
+    }
+  }
+  // 右の板を動かせる図（u: うらがえし・回転の進み具合、s: スライドの進み具合）
+  function makeView(P, colored) {
+    const sv = S('svg', { viewBox: '0 0 350 185', class: 'wide-svg' });
+    sv.appendChild(board(P.A, { x: AX, y: BY, color: COL.blue }));
+    opIcon(sv, P.op);
+    const g = S('g');
+    g.appendChild(board(P.B, colored
+      ? { bg: false, dots: false, color: COL.orange, dash: '11 8', outline: COL.orange }
+      : { bg: false, dots: true, color: COL.blue, outline: COL.boardEdge, outlineSolid: true }));
+    g.appendChild(S('rect', { x: 0, y: 0, width: BS, height: BS, fill: 'none', 'pointer-events': 'all' }));
+    sv.appendChild(g);
+    const v = { svg: sv, st: { u: 0, s: 0 }, onChange: null, enabled: false };
+    const c = BS / 2;
+    function apply() {
+      const ang = P.op === 'cw' ? 90 * v.st.u : 0, sx = P.op === 'flipX' ? 1 - 2 * v.st.u : 1;
+      const tx = BX + (AX - BX) * v.st.s;
+      g.setAttribute('transform', 'translate(' + tx + ' ' + BY + ') translate(' + c + ' ' + c + ') rotate(' + ang + ') scale(' + sx + ' 1) translate(' + (-c) + ' ' + (-c) + ')');
+      if (v.onChange) v.onChange();
+    }
+    function tween(key, to, dur, done) {
+      const from = v.st[key];
+      if (from === to) { if (done) done(); return; }
+      runSeq([{ dur: dur * Math.max(.3, Math.abs(to - from)), update: t => { v.st[key] = from + (to - from) * t; apply(); } }], done);
+    }
+    v.turn = () => tween('u', v.st.u > .5 ? 0 : 1, 1.0);
+    v.slide = () => tween('s', v.st.s > .5 ? 0 : 1, 1.0);
+    v.reset = () => tween('s', 0, .8, () => tween('u', 0, .8));
+    v.playAll = () => { stopAnim(); v.st.u = 0; v.st.s = 0; apply(); runSeq([{ dur: .5, linear: true }], () => tween('u', P.op === 'id' ? 0 : 1, 1.1, () => tween('s', 1, 1.1))); };
+    v.enable = () => { v.enabled = true; g.classList.add('drag-on'); };
+    let drag = null;
+    g.addEventListener('pointerdown', e => {
+      if (!v.enabled) return;
+      e.preventDefault(); stopAnim();
+      const m = sv.getScreenCTM(); if (!m) return;
+      drag = { x0: e.clientX, s0: v.st.s, k: 1 / m.a };
+      try { g.setPointerCapture(e.pointerId); } catch (err) { }
+    });
+    g.addEventListener('pointermove', e => {
+      if (!drag) return;
+      const dx = (e.clientX - drag.x0) * drag.k;
+      v.st.s = Math.max(0, Math.min(1, drag.s0 + dx / (AX - BX))); apply();
+    });
+    const end = () => {
+      if (!drag) return; drag = null;
+      if (v.st.s > .85) tween('s', 1, .3); else if (v.st.s < .15) tween('s', 0, .3);
+    };
+    g.addEventListener('pointerup', end); g.addEventListener('pointercancel', end);
+    apply();
+    return v;
+  }
+  function controls(v, P) {
+    const box = H('div', { class: 'ctrl' });
+    let tb = null;
+    if (P.op !== 'id') tb = ctrlBtn(box, P.op === 'flipX' ? 'うらがえす' : '90度{ど} まわす', () => v.turn());
+    const sb = ctrlBtn(box, 'かさねる', () => v.slide());
+    ctrlBtn(box, 'はじめに もどす', () => v.reset());
+    let ls = null, lu = null;
+    v.onChange = () => {
+      const s = v.st.s > .5, u = v.st.u > .5;
+      if (s !== ls) { ls = s; sb.innerHTML = R(s ? 'はなす' : 'かさねる'); }
+      if (tb && P.op === 'cw' && u !== lu) { lu = u; tb.innerHTML = R(u ? 'もとの 向{む}きに もどす' : '90度{ど} まわす'); }
+    };
+    v.onChange();
+    v.enable();
+    return box;
+  }
+  const WHY = {
+    drop: () => '線{せん}が 1本{ぽん} たりないよ。',
+    extra: () => 'よけいな 線{せん}が 1本{ぽん} あるよ。',
+    shift: () => '線{せん}の 場所{ばしょ}が 1つ ちがうよ。',
+    noturn: l => l === 3 ? '右{みぎ}の 板{いた}を うらがえすのを わすれているよ。' : '右{みぎ}の 板{いた}を まわすのを わすれているよ。',
+    flipY: () => '上{うえ}と 下{した}を 入{い}れかえているよ。うらがえすと、左{ひだり}と 右{みぎ}が 入{い}れかわるよ。',
+    ccw: () => 'まわす 向{む}きが 反対{はんたい}だよ。',
+    r180: () => 'まわしすぎだよ。90度{ど}は、4分{ぶん}の1 まわりだよ。'
+  };
+  function run(level) {
+    const P = gen(level);
+    const prompt = level <= 2 ? '2まいの 板{いた}を、そのまま 重{かさ}ねると、どんな 形{かたち}に なるかな？'
+      : level === 3 ? '右{みぎ}の 板{いた}を うらがえして（左{ひだり}と 右{みぎ}を 入{い}れかえて）、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？'
+      : '右{みぎ}の 板{いた}を 矢印{やじるし}の 向{む}きに 90度{ど} まわして、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？';
+    $('#q-prompt').innerHTML = R(prompt);
+    const view = makeView(P, false);
+    $('#q-fig').appendChild(view.svg);
+    hintBox('ヒント：右{みぎ}の 板{いた}を 動{うご}かしてみる', 'ボタンを おすか、右{みぎ}の 板{いた}を ゆびで 左{ひだり}へ 動{うご}かしてみてね。', tool => tool.appendChild(controls(view, P)));
+    const correct = P.opts.findIndex(o => o.why === 'ok');
+    const svgs = P.opts.map(o => S('svg', { viewBox: '0 0 ' + BS + ' ' + BS }, [board(fromKeys(o.ks), { color: COL.blue })]));
+    choices(svgs, correct, i => {
+      const ok = i === correct; answered(ok);
+      const fig = $('#q-fig'), ex = $('#q-extra'); stopAnim(); fig.innerHTML = ''; ex.innerHTML = '';
+      const v2 = makeView(P, false); fig.appendChild(v2.svg);
+      const tool = H('div', { class: 'tool' });
+      tool.appendChild(H('p', null, R('ボタンや ゆびで、右{みぎ}の 板{いた}を 動{うご}かして たしかめられるよ。')));
+      tool.appendChild(controls(v2, P)); ex.appendChild(tool);
+      let body = '右{みぎ}の 板{いた}を 動{うご}かして、左{ひだり}の 板{いた}に 重{かさ}ねると、こうなるよ。';
+      if (!ok) body = WHY[P.opts[i].why](level) + '<br>' + body;
+      feedback({ ok, head: ok ? '' : 'せいかいは ' + KANA[correct] + ' だよ。', body, replay: () => v2.playAll() });
+      v2.playAll();
+    });
+  }
+  return { run, gen };
+})();
+
+/* ======================================================
+   モード2 おりがみ
+   ====================================================== */
+const Origami = (() => {
+  const SQ = [[0, 0], [1, 0], [1, 1], [0, 1]];
+  function mkFold(o, d, kp) { const L = Math.hypot(d[0], d[1]); const f = { o, d: [d[0] / L, d[1] / L] }; f.ks = Math.sign(sideOf(kp, f)); return f; }
+  const keepFn = f => p => sideOf(p, f) * f.ks;
+  const moveFn = f => p => -sideOf(p, f) * f.ks;
+  function makeFolds(level) {
+    const V = kl => mkFold([.5, 0], [0, 1], [kl ? .25 : .75, .5]);
+    const Hz = kt => mkFold([0, .5], [1, 0], [.5, kt ? .25 : .75]);
+    let folds;
+    if (level === 1) folds = [pick([V(true), V(false), Hz(true), Hz(false)])];
+    else if (level === 3) {
+      const main = Math.random() < .5; const o = main ? [0, 0] : [1, 0], d = main ? [1, 1] : [-1, 1];
+      const n = [-d[1] / Math.SQRT2, d[0] / Math.SQRT2]; const sg = Math.random() < .5 ? 1 : -1;
+      folds = [mkFold(o, d, [.5 + n[0] * .2 * sg, .5 + n[1] * .2 * sg])];
+    } else {
+      const kl = Math.random() < .5, kt = Math.random() < .5;
+      folds = [V(kl), Hz(kt)];
+      if (level === 4) {
+        const x0 = kl ? 0 : .5, y0 = kt ? 0 : .5; const main = Math.random() < .5;
+        const o = main ? [x0, y0] : [x0 + .5, y0], d = main ? [1, 1] : [-1, 1];
+        const n = [-d[1] / Math.SQRT2, d[0] / Math.SQRT2]; const sg = Math.random() < .5 ? 1 : -1; const c = [x0 + .25, y0 + .25];
+        folds.push(mkFold(o, d, [c[0] + n[0] * .1 * sg, c[1] + n[1] * .1 * sg]));
+      }
+    }
+    const regions = [SQ];
+    for (const f of folds) regions.push(clipHalf(regions[regions.length - 1], keepFn(f)));
+    return { folds, regions };
+  }
+  function anchors(Rg) {
+    const a = []; const n = Rg.length;
+    for (let i = 0; i < n; i++) { const p = Rg[i], q = Rg[(i + 1) % n]; a.push(p); for (const t of [.25, .5, .75]) a.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]); }
+    a.push(centroid(Rg));
+    return a;
+  }
+  function shapePoly(type, c, s, rot) {
+    const out = [];
+    const ring = (m, r, off) => { for (let i = 0; i < m; i++) { const t = off + i * 2 * Math.PI / m; out.push([c[0] + r * Math.cos(t), c[1] + r * Math.sin(t)]); } };
+    if (type === 'circle') ring(28, s, 0);
+    else if (type === 'square') ring(4, s * 1.25, Math.PI / 4);
+    else if (type === 'tri') ring(3, s * 1.4, rot);
+    else ring(4, s * 1.3, 0);
+    return out;
+  }
+  function makeCuts(Rg, level, count) {
+    const s = { 1: .11, 2: .085, 3: .1, 4: .065 }[level];
+    const A = shuffle(anchors(Rg)); const res = []; const Rarea = Math.abs(polyArea(Rg));
+    for (const c of A) {
+      if (res.length >= count) break;
+      if (res.some(r => Math.hypot(r.c[0] - c[0], r.c[1] - c[1]) < s * 2.8)) continue;
+      const type = pick(['circle', 'square', 'tri', 'diamond']);
+      const rot = pick([-Math.PI / 2, Math.PI / 2, 0, Math.PI]);
+      const full = shapePoly(type, c, s, rot);
+      const cl = clipConvex(full, Rg);
+      if (cl.length < 3) continue;
+      const ar = Math.abs(polyArea(cl));
+      if (ar < Math.abs(polyArea(full)) * .22 || ar > Rarea * .4) continue;
+      res.push({ c, poly: cl });
+    }
+    return res.length === count ? res : null;
+  }
+  function unfold(polys, folds, mapFor, skip0) {
+    let Sx = polys.slice();
+    for (let i = folds.length - 1; i >= 0; i--) {
+      if (skip0 && i === 0) continue;
+      const m = mapFor(i);
+      Sx = Sx.concat(Sx.map(p => p.map(m)));
+    }
+    return Sx;
+  }
+  const NR = 44;
+  function raster(holes) {
+    let bits = '';
+    for (let j = 0; j < NR; j++) for (let i = 0; i < NR; i++) { const p = [(i + .5) / NR, (j + .5) / NR]; bits += holes.some(h => pip(p, h)) ? '1' : '0'; }
+    return bits;
+  }
+  function rdiff(a, b) { let c = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) c++; return c; }
+
+  function gen(level) {
+    let fallback = null;
+    for (let t = 0; t < 120; t++) {
+      const { folds, regions } = makeFolds(level);
+      const Rf = regions[regions.length - 1];
+      const count = (level === 2 || level === 3) ? (Math.random() < .5 ? 1 : 2) : 1;
+      const cuts = makeCuts(Rf, level, count); if (!cuts) continue;
+      const polys = cuts.map(c => c.poly);
+      const refl = i => p => reflectP(p, folds[i]);
+      const correct = unfold(polys, folds, refl);
+      const rc = raster(correct);
+      const cands = [];
+      cands.push({ h: unfold(polys, folds, i => { const c = centroid(regions[i + 1]), c2 = reflectP(c, folds[i]); return p => [p[0] + c2[0] - c[0], p[1] + c2[1] - c[1]]; }), why: 'translate' });
+      cands.push({ h: unfold(polys, folds, refl, true), why: 'missing' });
+      const f0 = folds[0]; const pf = { o: [.5, .5], d: [-f0.d[1], f0.d[0]] };
+      cands.push({ h: unfold(polys, folds, i => i === 0 ? (p => reflectP(p, pf)) : refl(i)), why: 'perp' });
+      for (let k = 0; k < 3; k++) { const c2 = makeCuts(Rf, level, count); if (c2) cands.push({ h: unfold(c2.map(c => c.poly), folds, refl), why: 'position' }); }
+      const MT = [p => [1 - p[0], p[1]], p => [p[0], 1 - p[1]], p => [p[1], p[0]], p => [1 - p[1], 1 - p[0]]];
+      const mt = pick(MT); cands.push({ h: correct.map(pl => pl.map(mt)), why: 'position' });
+      const first = cands.filter(c => c.why === 'translate' || c.why === 'missing');
+      const rest = shuffle(cands.filter(c => !(c.why === 'translate' || c.why === 'missing')));
+      const picked = []; const rs = [rc];
+      for (const c of first.concat(rest)) {
+        const r = raster(c.h);
+        if (rs.some(x => rdiff(x, r) < 14)) continue;
+        rs.push(r); picked.push(c); if (picked.length === 3) break;
+      }
+      if (picked.length < 3) continue;
+      const P = { folds, regions, cuts, correct, opts: shuffle([{ h: correct, why: 'ok' }].concat(picked)) };
+      if (!picked.some(c => c.why === 'translate' || c.why === 'missing')) { fallback = P; continue; }
+      return P;
+    }
+    return fallback;
+  }
+
+  /* --- 描画 --- */
+  function newSvg(cls) { return S('svg', { viewBox: '-0.08 -0.08 1.16 1.16', class: cls || '' }); }
+  function sqOutline() { return S('rect', { x: 0, y: 0, width: 1, height: 1, fill: 'none', stroke: COL.faint, 'stroke-width': .008, 'stroke-dasharray': '.03 .025' }); }
+  function paperG(defs, region, holes, fill) {
+    const id = nid('mask');
+    const mk = S('mask', { id, maskUnits: 'userSpaceOnUse', x: -2, y: -2, width: 5, height: 5 });
+    mk.appendChild(S('rect', { x: -2, y: -2, width: 5, height: 5, fill: '#ffffff' }));
+    for (const h of holes) mk.appendChild(S('polygon', { points: pts(h), fill: '#000000' }));
+    defs.appendChild(mk);
+    return S('polygon', { points: pts(region), fill: fill || COL.paper, stroke: COL.paperEdge, 'stroke-width': .012, 'stroke-linejoin': 'round', mask: 'url(#' + id + ')' });
+  }
+  function lineInPoly(Rg, f) {
+    const ps = []; const n = Rg.length;
+    for (let i = 0; i < n; i++) {
+      const a = Rg[i], b = Rg[(i + 1) % n]; const fa = sideOf(a, f), fb = sideOf(b, f);
+      if (Math.abs(fa) < 1e-9) ps.push(a);
+      else if (fa * fb < 0) { const t = fa / (fa - fb); ps.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
+    }
+    if (ps.length < 2) return null;
+    let best = null, bd = -1;
+    for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) { const d = Math.hypot(ps[i][0] - ps[j][0], ps[i][1] - ps[j][1]); if (d > bd) { bd = d; best = [ps[i], ps[j]]; } }
+    return best;
+  }
+  function creases(P) {
+    const out = [];
+    P.folds.forEach((f, i) => {
+      const s0 = lineInPoly(P.regions[i], f); if (!s0) return;
+      let segs = [s0];
+      for (let j = i - 1; j >= 0; j--) segs = segs.concat(segs.map(s => s.map(p => reflectP(p, P.folds[j]))));
+      out.push(...segs);
+    });
+    return out;
+  }
+  function stepBox(sv, label, big) { const d = H('div', { class: 'step' + (big ? ' big' : '') }); d.appendChild(sv); d.appendChild(H('span', null, label)); return d; }
+  function stepsFig(P) {
+    const wrap = H('div', { class: 'steps' });
+    P.folds.forEach((f, i) => {
+      const sv = newSvg(); const defs = S('defs'); sv.appendChild(defs); sv.appendChild(sqOutline());
+      sv.appendChild(paperG(defs, P.regions[i], []));
+      const sg = lineInPoly(P.regions[i], f);
+      if (sg) sv.appendChild(S('line', { x1: sg[0][0], y1: sg[0][1], x2: sg[1][0], y2: sg[1][1], stroke: COL.ink, 'stroke-width': .016, 'stroke-dasharray': '.05 .035' }));
+      const Mv = clipHalf(P.regions[i], moveFn(f)); const cm = centroid(Mv); const tg = reflectP(cm, f);
+      const mid = [(cm[0] + tg[0]) / 2, (cm[1] + tg[1]) / 2]; const ctrl = [mid[0] + f.d[0] * .14, mid[1] + f.d[1] * .14];
+      sv.appendChild(S('path', { d: 'M' + cm[0] + ' ' + cm[1] + ' Q' + ctrl[0] + ' ' + ctrl[1] + ' ' + tg[0] + ' ' + tg[1], fill: 'none', stroke: COL.blue, 'stroke-width': .028, 'stroke-linecap': 'round' }));
+      sv.appendChild(arrowHead(tg, Math.atan2(tg[1] - ctrl[1], tg[0] - ctrl[0]), .08, COL.blue));
+      wrap.appendChild(stepBox(sv, '①②③'[i] + ' おる'));
+      wrap.appendChild(H('span', { class: 'step-arrow', 'aria-hidden': 'true' }, '→'));
+    });
+    const sv = newSvg(); const defs = S('defs'); sv.appendChild(defs); sv.appendChild(sqOutline());
+    const hid = nid('hatch');
+    const pat = S('pattern', { id: hid, patternUnits: 'userSpaceOnUse', width: .05, height: .05, patternTransform: 'rotate(45)' });
+    pat.appendChild(S('rect', { x: 0, y: 0, width: .05, height: .05, fill: '#ffffff' }));
+    pat.appendChild(S('line', { x1: 0, y1: 0, x2: 0, y2: .05, stroke: '#3a4656', 'stroke-width': .022 }));
+    defs.appendChild(pat);
+    sv.appendChild(paperG(defs, P.regions[P.regions.length - 1], []));
+    for (const c of P.cuts) sv.appendChild(S('polygon', { points: pts(c.poly), fill: 'url(#' + hid + ')', stroke: COL.ink, 'stroke-width': .01, 'stroke-dasharray': '.025 .015' }));
+    wrap.appendChild(stepBox(sv, R('しましまを 切{き}る'), true));
+    return wrap;
+  }
+  function choiceSvg(holes) { const sv = newSvg(); const defs = S('defs'); sv.appendChild(defs); sv.appendChild(paperG(defs, SQ, holes)); return sv; }
+  // 折ったり開いたりできる紙（k: 今までに折った回数）
+  function makeView(P, withHoles) {
+    const sv = newSvg('anim-svg');
+    const n = P.folds.length; const Hs = []; Hs[n] = withHoles ? P.cuts.map(c => c.poly) : [];
+    for (let i = n - 1; i >= 0; i--) Hs[i] = Hs[i + 1].concat(Hs[i + 1].map(h => h.map(p => reflectP(p, P.folds[i]))));
+    const v = { svg: sv, k: withHoles ? n : 0, n, busy: false, onChange: null };
+    let flap = null;
+    function draw(k, flapIdx) {
+      sv.innerHTML = ''; const defs = S('defs'); sv.appendChild(defs); sv.appendChild(sqOutline()); flap = null;
+      if (flapIdx == null) {
+        sv.appendChild(paperG(defs, P.regions[k], Hs[k]));
+        if (!withHoles && k < n) {
+          const sg = lineInPoly(P.regions[k], P.folds[k]);
+          if (sg) sv.appendChild(S('line', { x1: sg[0][0], y1: sg[0][1], x2: sg[1][0], y2: sg[1][1], stroke: COL.ink, 'stroke-width': .014, 'stroke-dasharray': '.05 .035' }));
+        }
+        if (withHoles && k === 0) for (const s of creases(P)) sv.appendChild(S('line', { x1: s[0][0], y1: s[0][1], x2: s[1][0], y2: s[1][1], stroke: COL.crease, 'stroke-width': .009, 'stroke-dasharray': '.03 .025' }));
+      } else {
+        const f = P.folds[flapIdx];
+        sv.appendChild(paperG(defs, P.regions[flapIdx + 1], Hs[flapIdx + 1]));
+        const g = S('g');
+        g.appendChild(paperG(defs, P.regions[flapIdx + 1].map(p => reflectP(p, f)), Hs[flapIdx + 1].map(h => h.map(p => reflectP(p, f)))));
+        sv.appendChild(g); flap = { g, f };
+      }
+    }
+    function setFlap(tt) {
+      if (!flap) return;
+      const d = flap.f.d, o = flap.f.o, nn = [-d[1], d[0]];
+      const a = d[0] * d[0] + tt * nn[0] * nn[0], b = d[0] * d[1] + tt * nn[0] * nn[1], dd = d[1] * d[1] + tt * nn[1] * nn[1];
+      const e = o[0] - (a * o[0] + b * o[1]), f2 = o[1] - (b * o[0] + dd * o[1]);
+      flap.g.setAttribute('transform', 'matrix(' + a + ' ' + b + ' ' + b + ' ' + dd + ' ' + e + ' ' + f2 + ')');
+    }
+    const changed = () => { if (v.onChange) v.onChange(); };
+    // dir: +1 で 折る、-1 で 開く
+    v.go = (dir, done) => {
+      if (v.busy) return;
+      const k = v.k;
+      if ((dir > 0 && k >= n) || (dir < 0 && k <= 0)) { if (done) done(); return; }
+      const i = dir > 0 ? k : k - 1; const from = dir > 0 ? 1 : -1, to = -from;
+      v.busy = true;
+      runSeq([{ dur: 1.1, start: () => { draw(0, i); setFlap(from); }, update: t => setFlap(from + (to - from) * t) }],
+        () => { v.k = k + dir; draw(v.k, null); v.busy = false; changed(); if (done) done(); });
+    };
+    v.playAll = () => {
+      stopAnim(); v.busy = false; v.k = n; draw(n, null); changed();
+      const chain = () => { if (v.k > 0) v.go(-1, () => runSeq([{ dur: .3, linear: true }], chain)); };
+      runSeq([{ dur: .6, linear: true }], chain);
+    };
+    draw(v.k, null);
+    return v;
+  }
+  function controls(v) {
+    const box = H('div', { class: 'ctrl' });
+    const back = ctrlBtn(box, '◀ ひらく', () => v.go(-1));
+    const fwd = ctrlBtn(box, 'おる ▶', () => v.go(1));
+    const lab = H('span', { class: 'ctrl-lab' }); box.appendChild(lab);
+    v.onChange = () => { back.disabled = v.k <= 0; fwd.disabled = v.k >= v.n; lab.innerHTML = R('おった 回数{かいすう}：' + v.k + '回{かい}'); };
+    v.onChange();
+    return box;
+  }
+  const WHY = {
+    translate: 'ひろげると、あなは おりめを はさんで、かがみに うつしたように 反対{はんたい}向{む}きに できるよ。',
+    missing: 'ひろげるのを わすれている ところが あるよ。おった 回数{かいすう}だけ ひろげるよ。',
+    perp: 'おりめの 場所{ばしょ}が ちがうよ。どこで おったかを たしかめてね。',
+    position: 'あなの 場所{ばしょ}が ちがうよ。'
+  };
+  function run(level) {
+    const P = gen(level);
+    $('#q-prompt').innerHTML = R('紙{かみ}を おって、しましまの ところを 切{き}りとったよ。ひろげると、どんな 形{かたち}に なるかな？');
+    $('#q-fig').appendChild(stepsFig(P));
+    hintBox('ヒント：紙{かみ}を おってみる', '切{き}る 前{まえ}の 紙{かみ}だよ。「おる」と「ひらく」で、おったり もどしたり できるよ。', tool => {
+      const v = makeView(P, false); tool.appendChild(v.svg); tool.appendChild(controls(v));
+    });
+    const correct = P.opts.findIndex(o => o.why === 'ok');
+    choices(P.opts.map(o => choiceSvg(o.h)), correct, i => {
+      const ok = i === correct; answered(ok);
+      const fig = $('#q-fig'), ex = $('#q-extra'); stopAnim(); fig.innerHTML = ''; ex.innerHTML = '';
+      const v2 = makeView(P, true); fig.appendChild(v2.svg);
+      const tool = H('div', { class: 'tool' });
+      tool.appendChild(H('p', null, R('「ひらく」と「おる」で、たしかめられるよ。')));
+      tool.appendChild(controls(v2)); ex.appendChild(tool);
+      let body = 'おりめの ところで じゅんばんに ひろげていくと、あなは おりめを はさんだ 反対{はんたい}がわにも できるよ。';
+      if (!ok) body = WHY[P.opts[i].why] + '<br>' + body;
+      feedback({ ok, head: ok ? '' : 'せいかいは ' + KANA[correct] + ' だよ。', body, replay: () => v2.playAll() });
+      v2.playAll();
+    });
+  }
+  return { run, gen };
+})();
+
+/* ======================================================
+   モード3a かぞえる（三角形）
+   ====================================================== */
+const Tri = (() => {
+  const RANGE = { 1: [2, 4], 2: [5, 10], 3: [8, 13], 4: [14, 22] };
+  function fan(k, h) {
+    const A = [.5, .06], L = [.06, .94], Rt = [.94, .94];
+    const segs = [[A, L], [A, Rt], [L, Rt]];
+    for (let i = 1; i <= k; i++) { const x = .06 + .88 * i / (k + 1) + (Math.random() - .5) * .1 / (k + 1); segs.push([A, [x, .94]]); }
+    for (let j = 1; j <= h; j++) { const t = j / (h + 1) + (Math.random() - .5) * .12 / (h + 1); const y = .06 + .88 * t; segs.push([[.5 - .44 * t, y], [.5 + .44 * t, y]]); }
+    return segs;
+  }
+  function sq(o) {
+    const a = .1, b = .9;
+    const segs = [[[a, a], [b, a]], [[b, a], [b, b]], [[b, b], [a, b]], [[a, b], [a, a]]];
+    if (o.d1) segs.push([[a, a], [b, b]]); if (o.d2) segs.push([[b, a], [a, b]]);
+    if (o.mh) segs.push([[a, .5], [b, .5]]); if (o.mv) segs.push([[.5, a], [.5, b]]);
+    return segs;
+  }
+  function rect2(l, r) {
+    const x0 = .04, x1 = .5, x2 = .96, y0 = .28, y1 = .72;
+    const segs = [[[x0, y0], [x2, y0]], [[x2, y0], [x2, y1]], [[x2, y1], [x0, y1]], [[x0, y1], [x0, y0]], [[x1, y0], [x1, y1]]];
+    const dg = (xa, xb, t) => { if (t === 'd1' || t === 'X') segs.push([[xa, y0], [xb, y1]]); if (t === 'd2' || t === 'X') segs.push([[xb, y0], [xa, y1]]); };
+    dg(x0, x1, l); dg(x1, x2, r);
+    return segs;
+  }
+  function segInter(s, t) {
+    const p = s[0], r = sub(s[1], s[0]), q = t[0], u = sub(t[1], t[0]);
+    const den = crs(r, u); if (Math.abs(den) < 1e-12) return null;
+    const qp = sub(q, p); const a = crs(qp, u) / den, b = crs(qp, r) / den;
+    if (a < -1e-9 || a > 1 + 1e-9 || b < -1e-9 || b > 1 + 1e-9) return null;
+    return [p[0] + r[0] * a, p[1] + r[1] * a];
+  }
+  function onSeg(p, s) {
+    const d = sub(s[1], s[0]), v = sub(p, s[0]);
+    if (Math.abs(crs(d, v)) > 1e-7) return false;
+    const t = dot(d, v); return t > -1e-9 && t < dot(d, d) + 1e-9;
+  }
+  function analyze(segs) {
+    const V = [];
+    const addV = p => { for (let i = 0; i < V.length; i++) if (Math.hypot(V[i][0] - p[0], V[i][1] - p[1]) < 1e-4) return i; V.push(p); return V.length - 1; };
+    segs.forEach(s => { addV(s[0]); addV(s[1]); });
+    for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) { const x = segInter(segs[i], segs[j]); if (x) addV(x); }
+    const conn = new Set();
+    segs.forEach(s => {
+      const on = []; V.forEach((p, i) => { if (onSeg(p, s)) on.push(i); });
+      for (let a = 0; a < on.length; a++) for (let b = a + 1; b < on.length; b++) { conn.add(on[a] + ':' + on[b]); conn.add(on[b] + ':' + on[a]); }
+    });
+    const c = (a, b) => conn.has(a + ':' + b);
+    const tris = [];
+    for (let i = 0; i < V.length; i++) for (let j = i + 1; j < V.length; j++) {
+      if (!c(i, j)) continue;
+      for (let k = j + 1; k < V.length; k++) {
+        if (!c(i, k) || !c(j, k)) continue;
+        if (Math.abs(polyArea([V[i], V[j], V[k]])) > 1e-4) tris.push([i, j, k]);
+      }
+    }
+    return { V, tris };
+  }
+  function candidates() {
+    const c = [];
+    for (let k = 0; k <= 3; k++) for (let h = 0; h <= 2; h++) c.push(() => fan(k, h));
+    [{ d1: 1 }, { d1: 1, mh: 1 }, { d1: 1, d2: 1 }, { d1: 1, d2: 1, mh: 1 }, { d1: 1, d2: 1, mh: 1, mv: 1 }, { d1: 1, mh: 1, mv: 1 }].forEach(o => c.push(() => sq(o)));
+    for (const l of ['d1', 'd2', 'X']) for (const r of ['d1', 'd2', 'X']) c.push(() => rect2(l, r));
+    return c;
+  }
+  function gen(level) {
+    const [lo, hi] = RANGE[level];
+    for (let round = 0; round < 5; round++) {
+      for (const f of shuffle(candidates())) {
+        const segs = f(); const an = analyze(segs);
+        if (an.tris.length >= lo && an.tris.length <= hi) return { segs, V: an.V, tris: an.tris };
+      }
+    }
+    const segs = fan(1, 0); const an = analyze(segs); return { segs, V: an.V, tris: an.tris };
+  }
+  function drawLines(g, segs, w, color) { for (const s of segs) g.appendChild(S('line', { x1: s[0][0], y1: s[0][1], x2: s[1][0], y2: s[1][1], stroke: color, 'stroke-width': w, 'stroke-linecap': 'round' })); }
+  function thumb(P, t, label, missed) {
+    const d = H('div', { class: 'thumb' + (missed ? ' missed' : '') });
+    const sv = S('svg', { viewBox: '-0.06 -0.06 1.12 1.12' });
+    sv.appendChild(S('polygon', { points: pts(t.map(i => P.V[i])), fill: COL.accent, 'fill-opacity': .45, stroke: COL.accent, 'stroke-width': .03, 'stroke-linejoin': 'round' }));
+    drawLines(sv, P.segs, .022, COL.ink);
+    d.appendChild(sv); if (label) d.appendChild(H('span', null, label));
+    return d;
+  }
+  function toSvg(sv, e) {
+    const m = sv.getScreenCTM(); if (!m) return [-9, -9];
+    const p = sv.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
+    const q = p.matrixTransform(m.inverse()); return [q.x, q.y];
+  }
+  function run(level) {
+    const P = gen(level);
+    $('#q-prompt').innerHTML = R('この 図{ず}の 中{なか}に、三角形{さんかくけい}は ぜんぶで いくつ あるかな？');
+    const fig = $('#q-fig');
+    const label = H('div', { class: 'big-count', 'aria-live': 'polite' }, ''); label.hidden = true; fig.appendChild(label);
+    const sv = S('svg', { viewBox: '-0.06 -0.06 1.12 1.12', class: 'tri-svg' });
+    const gF = S('g'), gL = S('g'), gD = S('g'), gS = S('g');
+    sv.append(gF, gL, gD, gS);
+    drawLines(gL, P.segs, .012, COL.ink);
+    P.V.forEach(p => gD.appendChild(S('circle', { cx: p[0], cy: p[1], r: .015, fill: COL.dot })));
+    fig.appendChild(sv);
+
+    const ex = $('#q-extra');
+    const tool = H('div', { class: 'tool' });
+    tool.innerHTML = '<p>' + R('点{てん}を 3つ タップすると、見{み}つけた 三角形{さんかくけい}に 色{いろ}が つくよ。') + '</p>' +
+      '<div class="tool-head"><p>' + R('見{み}つけた 三角形{さんかくけい}：') + '<span class="found-n">0</span> こ</p></div>' +
+      '<p class="msg" aria-live="polite"></p><div class="thumbs"></div>';
+    const clr = H('button', { class: 'btn btn-sub btn-small', type: 'button' }, 'ぜんぶ けす');
+    tool.querySelector('.tool-head').appendChild(clr);
+    ex.appendChild(tool);
+    const nEl = tool.querySelector('.found-n'), msg = tool.querySelector('.msg'), thumbs = tool.querySelector('.thumbs');
+    let sel = [], found = [], active = true;
+    const say = s => { msg.innerHTML = R(s); };
+    function drawSel() {
+      gS.innerHTML = '';
+      if (sel.length >= 2) gS.appendChild(S('polyline', { points: pts(sel.map(i => P.V[i])), fill: 'none', stroke: COL.orange, 'stroke-width': .014, 'stroke-dasharray': '.03 .02' }));
+      sel.forEach(i => gS.appendChild(S('circle', { cx: P.V[i][0], cy: P.V[i][1], r: .035, fill: COL.orange, stroke: '#fff', 'stroke-width': .01 })));
+    }
+    function fillTri(t) { gF.innerHTML = ''; if (t) gF.appendChild(S('polygon', { points: pts(t.map(i => P.V[i])), fill: COL.accent, 'fill-opacity': .32, stroke: COL.accent, 'stroke-width': .016, 'stroke-linejoin': 'round' })); }
+    sv.addEventListener('pointerdown', e => {
+      if (!active) return;
+      e.preventDefault(); unlockAudio();
+      const pt = toSvg(sv, e);
+      let bi = -1, bd = .09;
+      P.V.forEach((p, i) => { const d = Math.hypot(p[0] - pt[0], p[1] - pt[1]); if (d < bd) { bd = d; bi = i; } });
+      if (bi < 0) return;
+      const k = sel.indexOf(bi); if (k >= 0) sel.splice(k, 1); else sel.push(bi);
+      sfx('tap'); fillTri(null);
+      if (sel.length === 3) {
+        const s3 = sel.slice().sort((a, b) => a - b); const key = s3.join(',');
+        const t = P.tris.find(x => x.join(',') === key);
+        if (!t) say('その 3つの 点{てん}では、三角形{さんかくけい}に ならないみたい。');
+        else if (found.includes(key)) { say('それは もう 見{み}つけたよ。'); fillTri(t); }
+        else {
+          found.push(key); sfx('find'); fillTri(t);
+          say('見{み}つけた！ ' + found.length + 'こめ');
+          nEl.textContent = String(found.length);
+          thumbs.appendChild(thumb(P, t, String(found.length)));
+        }
+        sel = [];
+      } else say('');
+      drawSel();
+    });
+    clr.addEventListener('click', () => { if (!active) return; found = []; sel = []; thumbs.innerHTML = ''; nEl.textContent = '0'; fillTri(null); drawSel(); say(''); });
+
+    countAnswer(P.tris.length, 'こ', v => {
+      active = false; sel = []; drawSel(); clr.disabled = true;
+      const n = P.tris.length; const ok = v === n; answered(ok);
+      // 小さい順。同じくらいの大きさは、上から・左から の順
+      const items = P.tris.map(t => { const q = t.map(i => P.V[i]); return { t, a: Math.abs(polyArea(q)), c: centroid(q) }; }).sort((x, y) => x.a - y.a);
+      let grp = 0; items.forEach((o, i) => { if (i > 0 && o.a > items[i - 1].a * 1.25) grp++; o.g = grp; });
+      const sorted = items.sort((x, y) => x.g - y.g || (Math.abs(x.c[1] - y.c[1]) > .04 ? x.c[1] - y.c[1] : x.c[0] - y.c[0]));
+      // 一覧
+      ex.innerHTML = '';
+      const list = H('div', { class: 'tool' });
+      list.innerHTML = '<p><b>' + R('ぜんぶの 三角形{さんかくけい}（' + n + 'こ）') + '</b></p>' +
+        (found.length ? '<p>' + R('オレンジの 点線{てんせん}の わくは、まだ 見{み}つけていなかった 三角形{さんかくけい}だよ。') + '</p>' : '');
+      const tw = H('div', { class: 'thumbs' });
+      sorted.forEach((o, i) => tw.appendChild(thumb(P, o.t, String(i + 1), found.length > 0 && !found.includes(o.t.join(',')))));
+      list.appendChild(tw); ex.appendChild(list);
+      const play = () => {
+        label.hidden = false;
+        const steps = sorted.map((o, i) => ({ dur: .6, linear: true, start: () => { fillTri(o.t); label.textContent = (i + 1) + 'こめ'; } }));
+        runSeq(steps, () => { fillTri(null); label.textContent = 'ぜんぶで ' + n + 'こ'; });
+      };
+      feedback({
+        ok, head: ok ? '' : 'せいかいは ' + n + 'こ だよ。（こたえは ' + v + 'こ だったね）',
+        body: '小{ちい}さい 三角形{さんかくけい}から 大{おお}きい 三角形{さんかくけい}へ、同{おな}じ 大{おお}きさの ものは 上{うえ}から・左{ひだり}から じゅんばんに 数{かぞ}えると、もれなく 数{かぞ}えられるよ。ぜんぶで ' + n + 'こ だよ。',
+        replay: play
+      });
+      play();
+    });
+  }
+  return { run, gen };
+})();
+
+/* ======================================================
+   モード3b かぞえる（カード）
+   ====================================================== */
+const Tile = (() => {
+  const CS = 56, SC = 1.25;
+  const LV = {
+    1: { w: [2, 3], h: 2, lines: true, full: false, rng: [2, 5], p: .65 },
+    2: { w: [3], h: 3, lines: true, full: false, rng: [4, 8], p: .6 },
+    3: { w: [3], h: 3, lines: false, full: false, rng: [4, 8], p: .65 },
+    4: { w: [4], h: 3, lines: false, full: true, rng: [6, 10], p: .7 }
+  };
+  function gen(level) {
+    const L = LV[level];
+    for (let t = 0; t < 2000; t++) {
+      const w = pick(L.w), h = L.h; const cells = [];
+      for (let i = 0; i < w * h; i++) cells.push(Math.random() < L.p ? (L.full && Math.random() < .25 ? 5 : 1 + rnd(4)) : 0);
+      const n = cells.filter(v => v).length;
+      if (n < L.rng[0] || n > L.rng[1]) continue;
+      const rowHas = r => cells.slice(r * w, r * w + w).some(v => v);
+      const colHas = c => { for (let r = 0; r < h; r++) if (cells[r * w + c]) return true; return false; };
+      if (!rowHas(0) || !rowHas(h - 1) || !colHas(0) || !colHas(w - 1)) continue;
+      if (L.full && (!cells.includes(5) || !cells.some(v => v >= 1 && v <= 4))) continue;
+      return { w, h, cells, n, lines: L.lines, full: L.full };
+    }
+    return { w: 2, h: 2, cells: [1, 3, 0, 2], n: 3, lines: L.lines, full: false };
+  }
+  function triPts(x, y, s, v) {
+    const A = [x, y], B = [x + s, y], C = [x + s, y + s], D = [x, y + s];
+    return v === 1 ? [A, D, C] : v === 2 ? [A, B, D] : v === 3 ? [A, B, C] : [B, C, D];
+  }
+  function drawCell(g, x, y, v, outline) {
+    if (!v) return;
+    const e = outline ? 0 : .6;
+    g.appendChild(S('rect', { x: x - e, y: y - e, width: CS + 2 * e, height: CS + 2 * e, fill: COL.card }));
+    if (v === 5) g.appendChild(S('rect', { x: x - e, y: y - e, width: CS + 2 * e, height: CS + 2 * e, fill: COL.cardDark }));
+    else g.appendChild(S('polygon', { points: pts(triPts(x, y, CS, v)), fill: COL.cardDark, stroke: COL.cardDark, 'stroke-width': 1, 'stroke-linejoin': 'round' }));
+    if (outline) g.appendChild(S('rect', { x, y, width: CS, height: CS, fill: 'none', stroke: COL.ink, 'stroke-width': 2 }));
+  }
+  function gridSvg(w, h) {
+    const W = w * CS + 16, Hh = h * CS + 16;
+    const sv = S('svg', { viewBox: '-8 -8 ' + W + ' ' + Hh });
+    sv.style.width = (W * SC) + 'px';
+    return sv;
+  }
+  function patternSvg(P) {
+    const sv = gridSvg(P.w, P.h); const g = S('g'); sv.appendChild(g);
+    P.cells.forEach((v, i) => drawCell(g, (i % P.w) * CS, Math.floor(i / P.w) * CS, v, P.lines));
+    return sv;
+  }
+  function sampleSvg(v) {
+    const sv = S('svg', { viewBox: '-8 -8 ' + (CS + 16) + ' ' + (CS + 16) }); sv.style.width = ((CS + 16) * SC) + 'px';
+    drawCell(sv, 0, 0, v, true); return sv;
+  }
+  function run(level) {
+    const P = gen(level);
+    $('#q-prompt').innerHTML = R(P.full
+      ? 'この もようは、2しゅるいの カードを ならべて つくったよ。カードは ぜんぶで なんまい つかったかな？'
+      : 'この もようは、カードを ならべて つくったよ。カードは なんまい つかったかな？');
+    const fig = $('#q-fig');
+    const label = H('div', { class: 'big-count', 'aria-live': 'polite' }, ''); label.hidden = true; fig.appendChild(label);
+    const pat = patternSvg(P); const over = S('g'); pat.appendChild(over); fig.appendChild(pat);
+    const smp = H('div', { class: 'sample' });
+    const row = H('div', { class: 'sample-row' });
+    row.appendChild(sampleSvg(1)); if (P.full) row.appendChild(sampleSvg(5));
+    smp.appendChild(row); smp.appendChild(H('span', null, R('つかった カード（同{おな}じ 大{おお}きさ）')));
+    fig.appendChild(smp);
+
+    // つくって たしかめる
+    const ex = $('#q-extra');
+    const tool = H('div', { class: 'tool build' });
+    tool.innerHTML = '<p>' + R('マスを タップすると、カードが おけるよ。タップするたびに 向{む}きが かわるよ。') + '</p>';
+    const bsv = gridSvg(P.w, P.h); tool.appendChild(bsv);
+    const bmsg = H('p', { class: 'msg', 'aria-live': 'polite' }, ''); tool.appendChild(bmsg);
+    const bclr = H('button', { class: 'btn btn-sub btn-small', type: 'button' }, 'ぜんぶ けす'); tool.appendChild(bclr);
+    const toggle = H('button', { class: 'btn btn-sub', type: 'button' }, R('カードを ならべて たしかめる'));
+    ex.appendChild(toggle);
+    tool.hidden = true; ex.appendChild(tool);
+    toggle.addEventListener('click', () => { unlockAudio(); tool.hidden = !tool.hidden; toggle.innerHTML = R(tool.hidden ? 'カードを ならべて たしかめる' : 'ならべる ところを とじる'); });
+    const maxV = P.full ? 5 : 4;
+    const build = new Array(P.w * P.h).fill(0);
+    let active = true;
+    function drawBuild() {
+      bsv.innerHTML = '';
+      build.forEach((v, i) => {
+        const x = (i % P.w) * CS, y = Math.floor(i / P.w) * CS;
+        const g = S('g');
+        g.appendChild(S('rect', { x, y, width: CS, height: CS, fill: '#ffffff', stroke: COL.faint, 'stroke-width': 1.5, 'stroke-dasharray': '4 3' }));
+        drawCell(g, x, y, v, true);
+        g.addEventListener('click', () => {
+          if (!active) return; unlockAudio();
+          build[i] = (build[i] + 1) % (maxV + 1); sfx('tap'); drawBuild();
+          bmsg.innerHTML = build.every((b, j) => b === P.cells[j]) ? R('おなじ もようが できたね！') : '';
+        });
+        bsv.appendChild(g);
+      });
+    }
+    drawBuild();
+    bclr.addEventListener('click', () => { if (!active) return; build.fill(0); drawBuild(); bmsg.innerHTML = ''; });
+
+    countAnswer(P.n, 'まい', v => {
+      active = false; bclr.disabled = true;
+      const ok = v === P.n; answered(ok);
+      const idx = []; P.cells.forEach((c, i) => { if (c) idx.push(i); });
+      const play = () => {
+        label.hidden = false; over.innerHTML = '';
+        const steps = [{ dur: .6, linear: true, start: () => {
+          label.textContent = '';
+          idx.forEach(i => over.appendChild(S('rect', { x: (i % P.w) * CS, y: Math.floor(i / P.w) * CS, width: CS, height: CS, fill: 'none', stroke: COL.orange, 'stroke-width': 2, 'stroke-dasharray': '5 4' })));
+        } }];
+        idx.forEach((i, k) => steps.push({ dur: .5, linear: true, start: () => {
+          const x = (i % P.w) * CS, y = Math.floor(i / P.w) * CS;
+          over.appendChild(S('rect', { x: x + 2, y: y + 2, width: CS - 4, height: CS - 4, fill: 'none', stroke: COL.orange, 'stroke-width': 4 }));
+          over.appendChild(S('circle', { cx: x + CS / 2, cy: y + CS / 2, r: 14, fill: '#ffffff', stroke: COL.orange, 'stroke-width': 2.5 }));
+          over.appendChild(T(x + CS / 2, y + CS / 2 + 6, String(k + 1), { 'font-size': 17, 'font-weight': 700, 'text-anchor': 'middle', fill: COL.ink }));
+          label.textContent = (k + 1) + 'まい';
+        } }));
+        runSeq(steps, () => { label.textContent = 'ぜんぶで ' + P.n + 'まい'; });
+      };
+      feedback({
+        ok, head: ok ? '' : 'せいかいは ' + P.n + 'まい だよ。（こたえは ' + v + 'まい だったね）',
+        body: (P.lines ? 'カードを 上{うえ}の 列{れつ}から、左{ひだり}から じゅんばんに 数{かぞ}えると、' : 'カードの さかいめに 線{せん}を 引{ひ}いて、上{うえ}の 列{れつ}から、左{ひだり}から じゅんばんに 数{かぞ}えてみると、') + 'ぜんぶで ' + P.n + 'まい だよ。',
+        replay: play
+      });
+      play();
+    });
+  }
+  return { run, gen };
+})();
+
+/* ===== 設定画面 ===== */
+const LV_DESC = [
+  ['線{せん}2本{ほん}ずつ・そのまま', '1回{かい} おる', '2〜4こ', 'わくあり・小{ちい}さい'],
+  ['線{せん}3本{ぼん}ずつ・そのまま', '2回{かい} おる', '5〜10こ', 'わくあり・3×3'],
+  ['うらがえして 重{かさ}ねる', '三角{さんかく}に おる', '8〜13こ', 'わくなし・3×3'],
+  ['90度{ど} まわして 重{かさ}ねる', '3回{かい} おる', '14こ いじょう', 'わくなし・2しゅるい']
+];
+function sumText() { $('#cfg-sum').innerHTML = R(CFG.count + 'もん　・　効果音{こうかおん} ' + (CFG.sound ? 'ON' : 'OFF')); }
+function startLevel() {
+  const box = $('#start-level'); box.innerHTML = '';
+  const s = seg([1, 2, 3, 4].map(n => [String(n), n]), CFG.level, v => { CFG.level = v; saveCfg(); sumText(); });
+  s.classList.add('big'); box.appendChild(s);
+}
+function closeSettings() { $('#settings').hidden = true; startLevel(); }
+function buildSettings() {
+  const card = $('#settings .modal-card'); card.innerHTML = '';
+  card.appendChild(H('h2', null, R('設定{せってい}')));
+  const row = (label, ctrl) => { const r = H('div', { class: 'set-row' }); r.appendChild(H('div', { class: 'set-label' }, R(label))); r.appendChild(ctrl); card.appendChild(r); return r; };
+  const tw = H('div', { class: 'table-wrap' });
+  const refresh = () => {
+    tw.innerHTML = '<table class="lv-table"><thead><tr><th>レベル</th><th>かさねる</th><th>おりがみ</th><th>' + R('三角形{さんかくけい}') + '</th><th>カード</th></tr></thead><tbody>' +
+      LV_DESC.map((r, i) => '<tr class="' + (i + 1 === CFG.level ? 'cur' : '') + '"><td>' + (i + 1) + '</td>' + r.map(c => '<td>' + R(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+  };
+  const lvSeg = seg([1, 2, 3, 4].map(n => [String(n), n]), CFG.level, v => { CFG.level = v; saveCfg(); refresh(); sumText(); });
+  lvSeg.classList.add('big');
+  row('レベル', lvSeg);
+  card.appendChild(tw); refresh();
+  row('問題{もんだい}の 数{かず}', stepper(CFG.count, 3, 20, v => { CFG.count = v; saveCfg(); sumText(); }).el);
+  row('効果音{こうかおん}', seg([['ON', true], ['OFF', false]], CFG.sound, v => { CFG.sound = v; saveCfg(); sumText(); }));
+  row('かぞえるの 問題{もんだい}', seg([[R('三角形{さんかくけい}'), 'tri'], ['カード', 'tile'], ['りょうほう', 'both']], CFG.ctype, v => { CFG.ctype = v; saveCfg(); }));
+  row('かぞえるの こたえかた', seg([['4つから えらぶ', 'choice'], [R('数字{すうじ}を 入{い}れる'), 'input']], CFG.cans, v => { CFG.cans = v; saveCfg(); }));
+  const foot = H('div', { class: 'set-foot' });
+  const close = H('button', { class: 'btn btn-primary', type: 'button' }, 'とじる');
+  close.addEventListener('click', closeSettings);
+  foot.appendChild(close); card.appendChild(foot);
+}
+
+/* ===== はじめ ===== */
+function init() {
+  document.querySelectorAll('[data-r]').forEach(el => { el.innerHTML = R(el.innerHTML); });
+  sumText(); startLevel();
+  document.querySelectorAll('.mode-card').forEach(b => b.addEventListener('click', () => { unlockAudio(); startMode(b.dataset.mode); }));
+  $('#btn-gear').addEventListener('click', () => { unlockAudio(); buildSettings(); $('#settings').hidden = false; });
+  $('#settings').addEventListener('click', e => { if (e.target.id === 'settings') closeSettings(); });
+  $('#btn-quit').addEventListener('click', () => { stopAnim(); show('start'); });
+  $('#res-again').addEventListener('click', () => { unlockAudio(); startMode(SES.mode); });
+  $('#res-home').addEventListener('click', () => show('start'));
+  document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+}
+if (typeof document !== 'undefined') init();
+if (typeof module !== 'undefined') module.exports = { Overlap, Origami, Tri, Tile };
+
+</script>
+</body>
+</html>
