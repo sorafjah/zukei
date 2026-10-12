@@ -767,8 +767,8 @@ const Overlap = (() => {
     return g;
   }
   const BX = 215, AX = 5, BY = 45;
-  function opIcon(sv, op) {
-    const cx = BX + BS / 2;
+  function opIcon(sv, op, bx) {
+    const cx = (bx == null ? BX : bx) + BS / 2;
     if (op === 'flipX') {
       sv.appendChild(S('path', { d: 'M' + (cx - 42) + ' 26 Q' + cx + ' 4 ' + (cx + 42) + ' 26', fill: 'none', stroke: COL.orange, 'stroke-width': 4, 'stroke-linecap': 'round' }));
       sv.appendChild(arrowHead([cx + 44, 27], Math.atan2(22, 42), 13, COL.orange));
@@ -864,7 +864,9 @@ const Overlap = (() => {
     : op === 'flipX' ? '右{みぎ}の 板{いた}を うらがえして（左{ひだり}と 右{みぎ}を 入{い}れかえて）、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？'
     : '右{みぎ}の 板{いた}を 矢印{やじるし}の 向{む}きに 90度{ど} まわして、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？';
   function paper(P) {
-    return { prompt: promptOf(P.op), fig: [makeView(P).svg], choices: P.opts.map(o => S('svg', { viewBox: '0 0 ' + BS + ' ' + BS }, [board(o.C, P.G)])), ans: P.opts.findIndex(o => o.why === 'ok') };
+    const sv = S('svg', { viewBox: P.op === 'id' ? '0 38 300 147' : '0 0 300 185', class: 'ovfig' });
+    sv.appendChild(board(P.A, P.G, { x: 5, y: BY })); sv.appendChild(board(P.B, P.G, { x: 165, y: BY })); opIcon(sv, P.op, 165);
+    return { prompt: promptOf(P.op), fig: [sv], choices: P.opts.map(o => S('svg', { viewBox: '0 0 ' + BS + ' ' + BS }, [board(o.C, P.G)])), ans: P.opts.findIndex(o => o.why === 'ok') };
   }
   function run(P) {
     P = P || make(CFG.det);
@@ -1617,15 +1619,18 @@ body{margin:0;font-family:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Meiryo",s
 ruby rt{font-size:.5em}
 .page{width:190mm;height:281mm;display:flex;flex-direction:column;overflow:hidden;break-after:page;page-break-after:always}
 .page:last-of-type{break-after:auto;page-break-after:auto}
-.head{display:flex;justify-content:space-between;align-items:flex-end;gap:8mm;margin-bottom:4mm}
-.title{font-size:14pt;font-weight:700}
-.name{flex:1;border-bottom:1px solid #000;padding-bottom:1mm;font-size:12pt}
+.head{display:flex;justify-content:space-between;align-items:stretch;gap:8mm;margin-bottom:4mm}
+.hleft{flex:1;display:flex;flex-direction:column;justify-content:space-between}
+.title{font-size:12pt;font-weight:700}
+.name{border-bottom:1px solid #000;padding-bottom:1mm;font-size:12pt}
 .code{display:flex;align-items:flex-end;gap:3mm;font-size:10pt;line-height:1.6}
-.code .note{font-size:9pt;line-height:1.7;max-width:46mm}
+.code .note{font-size:9pt;line-height:1.7;white-space:nowrap}
 .code svg{width:20mm;height:20mm}
 .code b{font-size:13pt;letter-spacing:.05em}
 .q{flex:1;display:grid;grid-template-columns:86mm 1fr;grid-template-rows:auto 1fr;column-gap:4mm;padding:2mm 0;min-height:0}
-.p{grid-column:1/3;line-height:2}
+.p{grid-column:1/3;line-height:2;display:grid;grid-template-columns:auto 1fr;column-gap:3mm}
+.fig{justify-content:flex-start!important}
+.fig>svg.ovfig{width:64mm;margin-top:2mm}
 .fig{display:flex;align-items:center;justify-content:center;min-height:0}
 .fig>svg{width:100%;max-height:48mm}
 .steps{display:flex;align-items:center;gap:1mm;width:100%}
@@ -1637,7 +1642,7 @@ ruby rt{font-size:.5em}
 .ch{display:grid;grid-template-columns:repeat(4,1fr);gap:2mm;align-items:center}
 .ch>div{display:flex;flex-direction:column;align-items:center;gap:1mm}
 .k{font-weight:700}
-.ch svg{width:100%;max-height:30mm}
+.ch svg{width:100%;max-height:27mm}
 .pnum{font-size:20pt;font-weight:700}
 .pnum small{font-size:11pt;margin-left:1mm}
 .ans-table{border-collapse:collapse;margin-top:6mm;font-size:14pt}
@@ -1654,9 +1659,9 @@ ruby rt{font-size:.5em}
 function sheetHTML(c, probs, withAns, forFile) {
   const papers = withPrintCol(() => probs.map(pr => Object.assign({ m: pr.m }, MODS[pr.m].paper(pr.P))));
   const qr = qrSvg(APP_URL + '#p' + c.code.replace('-', ''));
-  const head = `<header class="head"><div class="name">なまえ</div>` +
-    `<div class="code">${qr}<div>${R('問題{もんだい}番号{ばんごう}')}<br><b>${c.code}</b><div class="note">${R(qr ? 'QRコードを 読{よ}みこむと、ヒントと 答{こた}えが 見{み}られるよ。' : 'アプリの「プリントの 答{こた}え合{あ}わせ」に 番号{ばんごう}を 入{い}れると、ヒントと 答{こた}えが 見{み}られるよ。')}</div></div></div></header>`;
-  const qs = papers.map((p, i) => `<section class="q"><div class="p"><b>${i + 1}</b>　<span contenteditable="true">${R(p.prompt)}</span>　こたえ（　　　　　）</div>` +
+  const head = `<header class="head"><div class="hleft"><div class="title" contenteditable="true">${R('重{かさ}ねる 折{お}る 数{かぞ}える プリント')}</div><div class="name">なまえ</div></div>` +
+    `<div class="code">${qr}<div>${R('問題{もんだい}番号{ばんごう}')}<br><b>${c.code}</b><div class="note">${R(qr ? 'QRコードを 読{よ}みこむと、<br>ヒントと 答{こた}えが 見{み}られるよ。' : 'アプリの「プリントの 答{こた}え合{あ}わせ」に 番号{ばんごう}を 入{い}れると、ヒントと 答{こた}えが 見{み}られるよ。')}</div></div></div></header>`;
+  const qs = papers.map((p, i) => `<section class="q"><div class="p"><b>${i + 1}</b><div><span contenteditable="true">${R(p.prompt)}</span><br>こたえ（　　　　　）</div></div>` +
     `<div class="fig">${p.fig.map(e => e.outerHTML).join('')}</div>` +
     `<div class="ch">${p.choices.map((e, j) => `<div><span class="k">${KANA[j]}</span>${e.outerHTML}</div>`).join('')}</div></section>`).join('');
   const ansPage = withAns ? `<div class="page"><header class="head"><div class="title">こたえ</div><div class="code"><div>${R('問題{もんだい}番号{ばんごう}')}<br><b>${c.code}</b></div></div></header>` +
@@ -1756,7 +1761,7 @@ function startLevel() {
 function useSeg(cur) {
   return seg([[R('アプリで 見{み}る'), 'app'], ['プリントを つくる', 'print']], cur, v => {
     if (v === 'print') { $('#settings').hidden = true; openPrint(); }
-    else { show('start'); startLevel(); }
+    else { show('start'); startLevel(); buildSettings(); $('#settings').hidden = false; }
   });
 }
 function closeSettings() { $('#settings').hidden = true; startLevel(); sumText(); }
