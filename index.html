@@ -155,6 +155,7 @@ svg{touch-action:manipulation}
 .set-foot{display:flex;justify-content:flex-end;margin-top:16px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+
 </head>
 <body>
 <div id="app">
@@ -301,7 +302,6 @@ svg{touch-action:manipulation}
     <div class="modal-card" role="dialog" aria-modal="true"></div>
   </div>
 </div>
-
 <script>
 'use strict';
 /* ===== 乱数（問題番号から 同じ問題を 作れるように） ===== */
@@ -383,7 +383,7 @@ function reflectP(p, f) { const v = sub(p, f.o); const a = dot(v, f.d); return [
 const PRESET = {
   1: { ovN: 2, ovOp: 'id', orN: '1', orShape: 'mix', orCut: '1', triR: 1, triGap: 'no' },
   2: { ovN: 3, ovOp: 'id', orN: '2', orShape: 'mix', orCut: '1', triR: 2, triGap: 'no' },
-  3: { ovN: 3, ovOp: 'flipX', orN: '3', orShape: 'mix', orCut: '1', triR: 3, triGap: 'no' },
+  3: { ovN: 3, ovOp: 'flipX', orN: '2', orShape: 'mix', orCut: '2', triR: 3, triGap: 'mix' },
   4: { ovN: 3, ovOp: 'cw', orN: '3', orShape: 'mix', orCut: '2', triR: 4, triGap: 'mix' }
 };
 const DEF = { level: 1, det: Object.assign({}, PRESET[1]), count: 5, sound: true, cans: 'choice', intro: true };
