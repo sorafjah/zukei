@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
 /* 白い台紙の上に図を大きく置く、ドリル型の1画面アプリ（明るい単色テーマ） */
 :root{
@@ -49,6 +50,15 @@ svg{touch-action:manipulation}
 .intro-list{font-size:20px;line-height:2.3;margin:0;padding-left:1.6em;display:grid;gap:4px}
 .intro-btns{display:flex;justify-content:center}
 #intro-go{min-width:220px;min-height:60px;font-size:24px}
+.start-links{display:flex;justify-content:center;margin-top:18px}
+.print-card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:16px 20px;display:flex;flex-direction:column;gap:6px}
+.print-info p{margin:6px 0}
+.pcode{font-size:24px;letter-spacing:.05em;color:var(--accent)}
+.print-frame{width:100%;height:75vh;border:2px solid var(--line);border-radius:12px;background:#e9edf2;margin-top:8px}
+.code-inp{height:56px;min-width:0;width:16em;max-width:100%;border-radius:14px;border:2px solid var(--line);font-size:24px;font-weight:700;padding:0 14px;letter-spacing:.05em;text-transform:uppercase}
+.review-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:620px){.review-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.review-card{padding:14px 8px}
 .grp-h{margin:10px 0 2px!important;font-weight:700;color:var(--accent)}
 .set-h3{font-size:18px;margin:18px 0 0;color:var(--accent)}
 .set-note{margin:8px 0 0;font-size:15px;color:var(--sub);line-height:2}
@@ -215,7 +225,32 @@ svg{touch-action:manipulation}
         <span class="mode-desc" data-r>かさねる・おりがみ・かぞえるを じゅんばんに</span>
       </button>
     </div>
+    <div class="start-links"><button id="btn-review" class="btn btn-sub" type="button" data-r>プリントの 答{こた}え合{あ}わせ</button></div>
     <p class="cfg-sum" id="cfg-sum"></p>
+  </section>
+
+  <section id="scr-print" class="screen" hidden>
+    <header class="topbar">
+      <button id="print-back" class="pill-btn" type="button">もどる</button>
+      <div class="q-title" data-r>プリントを つくる</div>
+    </header>
+    <div class="print-card" id="print-body"></div>
+  </section>
+
+  <section id="scr-review" class="screen" hidden>
+    <header class="topbar">
+      <button id="review-back" class="pill-btn" type="button">もどる</button>
+      <div class="q-title" data-r>プリントの 答{こた}え合{あ}わせ</div>
+    </header>
+    <div class="print-card">
+      <p data-r>プリントの 右上{みぎうえ}に ある 問題{もんだい}番号{ばんごう}を 入{い}れてね。</p>
+      <div class="ans-row">
+        <input id="review-code" class="code-inp" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="1M2AB-4831" aria-label="もんだいばんごう">
+        <button id="review-go" class="btn btn-primary" type="button" data-r>よびだす</button>
+      </div>
+      <p class="msg" id="review-msg" aria-live="polite"></p>
+      <div id="review-list"></div>
+    </div>
   </section>
 
   <section id="scr-intro" class="screen" hidden>
@@ -269,6 +304,11 @@ svg{touch-action:manipulation}
 
 <script>
 'use strict';
+/* ===== 乱数（問題番号から 同じ問題を 作れるように） ===== */
+let RNG = Math.random;
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function withSeed(key, fn) { const keep = RNG; RNG = mulberry32(hashStr(key)); try { return fn(); } finally { RNG = keep; } }
 /* ===== 共通の道具 ===== */
 const NS = 'http://www.w3.org/2000/svg';
 const $ = s => document.querySelector(s);
@@ -287,7 +327,7 @@ function H(tag, attrs, html) {
 function T(x, y, str, attrs) { const t = S('text', Object.assign({ x, y }, attrs || {})); t.textContent = str; return t; }
 // 「漢字{よみ}」を ruby にする
 const R = s => String(s).replace(/([一-鿿々]+)\{([^}]+)\}/g, '<ruby>$1<rt>$2</rt></ruby>');
-const rnd = n => Math.floor(Math.random() * n);
+const rnd = n => Math.floor(RNG() * n);
 const pick = a => a[rnd(a.length)];
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 let uid = 0; const nid = p => p + '-' + (++uid);
@@ -453,7 +493,7 @@ const MODE_NAME = { overlap: 'かさねる', origami: 'おりがみ', count: '�
 const MIX_ORDER = ['overlap', 'origami', 'count'];
 let SES = null;
 function show(name) {
-  for (const s of ['start', 'intro', 'q', 'result']) document.getElementById('scr-' + s).hidden = (s !== name);
+  for (const s of ['start', 'intro', 'q', 'result', 'print', 'review']) document.getElementById('scr-' + s).hidden = (s !== name);
   window.scrollTo(0, 0);
 }
 const INTRO = {
@@ -500,14 +540,17 @@ function startMode(mode) {
 }
 function renderQ() {
   stopAnim();
-  const m = SES.mode === 'mix' ? MIX_ORDER[SES.idx % 3] : SES.mode;
-  $('#q-title').innerHTML = (SES.mode === 'mix' ? '3つとも ・ ' : '') + MODE_NAME[m] + '<span class="lv">' + lvText() + '</span>';
+  const pr = SES.probs ? SES.probs[SES.idx] : null;
+  const m = pr ? pr.m : SES.mode === 'mix' ? MIX_ORDER[SES.idx % 3] : SES.mode;
+  $('#q-title').innerHTML = pr ? 'プリント ' + (SES.idx + 1) + ' ・ ' + MODE_NAME[m] + '<span class="lv">' + SES.code.code + '</span>'
+    : (SES.mode === 'mix' ? '3つとも ・ ' : '') + MODE_NAME[m] + '<span class="lv">' + lvText() + '</span>';
   $('#q-prog').textContent = (SES.idx + 1) + ' / ' + SES.total;
   const fb = $('#q-feedback'); fb.hidden = true; fb.innerHTML = '';
   $('#q-answer').innerHTML = ''; $('#q-fig').innerHTML = ''; $('#q-extra').innerHTML = '';
-  if (m === 'overlap') Overlap.run();
-  else if (m === 'origami') Origami.run();
-  else Tri.run();
+  const P = pr ? pr.P : undefined;
+  if (m === 'overlap') Overlap.run(P);
+  else if (m === 'origami') Origami.run(P);
+  else Tri.run(P);
 }
 function hintBox(btnLabel, note, build) {
   const ex = $('#q-extra');
@@ -535,20 +578,24 @@ function feedback(o) {
     btns.appendChild(b);
   }
   const last = SES.idx + 1 >= SES.total;
-  const nx = H('button', { class: 'btn btn-primary', type: 'button' }, last ? R('けっかを 見{み}る') : 'つぎへ ▶');
-  nx.addEventListener('click', () => { unlockAudio(); SES.idx++; if (SES.idx >= SES.total) showResult(); else { renderQ(); window.scrollTo(0, 0); } });
+  const rv = !!SES.probs;
+  const nx = H('button', { class: 'btn btn-primary', type: 'button' }, last ? R(rv ? 'プリントの 一覧{いちらん}に もどる' : 'けっかを 見{み}る') : 'つぎへ ▶');
+  nx.addEventListener('click', () => { unlockAudio(); SES.idx++; if (SES.idx >= SES.total) { if (rv) openReview(SES.code.code); else showResult(); } else { renderQ(); window.scrollTo(0, 0); } });
   btns.appendChild(nx);
   if (window.matchMedia && !window.matchMedia('(min-width:900px) and (orientation:landscape)').matches) {
     setTimeout(() => { try { fb.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'nearest' }); } catch (e) { } }, 50);
   }
 }
-function countAnswer(n, unit, onAnswer) {
-  if (CFG.cans === 'input') { numberAnswer(unit, onAnswer); return; }
+function countVals(n) {
   const d = [];
   if (n - 1 > 0) d.push(n - 1);
   d.push(n + 1);
   for (const x of shuffle([n - 2, n + 2, n - 3, n + 3, n + 4])) { if (d.length >= 3) break; if (x > 0 && x !== n && !d.includes(x)) d.push(x); }
-  const vals = [n].concat(d.slice(0, 3)).sort((a, b) => a - b);
+  return [n].concat(d.slice(0, 3)).sort((a, b) => a - b);
+}
+function countAnswer(n, unit, onAnswer, vals) {
+  if (CFG.cans === 'input' && !(SES && SES.probs)) { numberAnswer(unit, onAnswer); return; }
+  vals = vals || countVals(n);
   const nodes = vals.map(x => H('span', { class: 'num-choice' }, x + '<small>' + unit + '</small>'));
   choices(nodes, vals.indexOf(n), i => onAnswer(vals[i]));
 }
@@ -635,7 +682,7 @@ const Overlap = (() => {
   }
   function randShape(G, minA, maxA) {
     for (let t = 0; t < 500; t++) {
-      const m = Math.random() < .5 ? 3 : 4; const ps = [];
+      const m = RNG() < .5 ? 3 : 4; const ps = [];
       while (ps.length < m) { const q = [rnd(G), rnd(G)]; if (!ps.some(r => r[0] === q[0] && r[1] === q[1])) ps.push(q); }
       const h = hull(ps); if (h.length !== m) continue;
       const a = Math.abs(polyArea(h)); if (a < minA || a > maxA) continue;
@@ -809,15 +856,20 @@ const Overlap = (() => {
     ccw: () => 'まわす 向{む}きが 反対{はんたい}だよ。',
     r180: () => 'まわしすぎだよ。90度{ど}は、4分{ぶん}の1 まわりだよ。'
   };
-  function run() {
-    const d = CFG.det;
+  function make(d) {
     const op = d.ovOp === 'mix' ? pick(['id', 'flipX', 'cw']) : d.ovOp;
-    const kind = 'line';
-    const P = gen({ n: d.ovN, op, kind });
-    const prompt = op === 'id' ? '2まいの 板{いた}を、そのまま 重{かさ}ねると、どんな 形{かたち}に なるかな？'
-      : op === 'flipX' ? '右{みぎ}の 板{いた}を うらがえして（左{ひだり}と 右{みぎ}を 入{い}れかえて）、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？'
-      : '右{みぎ}の 板{いた}を 矢印{やじるし}の 向{む}きに 90度{ど} まわして、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？';
-    $('#q-prompt').innerHTML = R(prompt);
+    return gen({ n: d.ovN, op, kind: 'line' });
+  }
+  const promptOf = op => op === 'id' ? '2まいの 板{いた}を、そのまま 重{かさ}ねると、どんな 形{かたち}に なるかな？'
+    : op === 'flipX' ? '右{みぎ}の 板{いた}を うらがえして（左{ひだり}と 右{みぎ}を 入{い}れかえて）、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？'
+    : '右{みぎ}の 板{いた}を 矢印{やじるし}の 向{む}きに 90度{ど} まわして、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？';
+  function paper(P) {
+    return { prompt: promptOf(P.op), fig: [makeView(P).svg], choices: P.opts.map(o => S('svg', { viewBox: '0 0 ' + BS + ' ' + BS }, [board(o.C, P.G)])), ans: P.opts.findIndex(o => o.why === 'ok') };
+  }
+  function run(P) {
+    P = P || make(CFG.det);
+    const op = P.op;
+    $('#q-prompt').innerHTML = R(promptOf(op));
     const view = makeView(P);
     $('#q-fig').appendChild(view.svg);
     hintBox('ヒント：右{みぎ}の 板{いた}を 動{うご}かしてみる',
@@ -839,7 +891,7 @@ const Overlap = (() => {
       v2.playAll();
     });
   }
-  return { run, gen };
+  return { run, gen, make, paper };
 })();
 
 /* ======================================================
@@ -862,8 +914,8 @@ const Origami = (() => {
     let folds;
     if (level === 1) folds = [pick([V(true), V(false), Hz(true), Hz(false)])];
     else if (level === 3 || level === 5) {
-      const main = Math.random() < .5; const o = main ? [0, 0] : [1, 0], d = main ? [1, 1] : [-1, 1];
-      const n = [-d[1] / Math.SQRT2, d[0] / Math.SQRT2]; const sg = Math.random() < .5 ? 1 : -1;
+      const main = RNG() < .5; const o = main ? [0, 0] : [1, 0], d = main ? [1, 1] : [-1, 1];
+      const n = [-d[1] / Math.SQRT2, d[0] / Math.SQRT2]; const sg = RNG() < .5 ? 1 : -1;
       folds = [mkFold(o, d, [.5 + n[0] * .2 * sg, .5 + n[1] * .2 * sg])];
       if (level === 5) {
         // 三角に おった紙を、もういちど 半分の 三角に おる（直角の かどから 長い辺の まん中へ）
@@ -873,16 +925,16 @@ const Origami = (() => {
         const v0 = R1[vi], a1 = R1[(vi + 1) % R1.length], a2 = R1[(vi + 2) % R1.length];
         const mid = [(a1[0] + a2[0]) / 2, (a1[1] + a2[1]) / 2];
         const dd = sub(mid, v0), L = Math.hypot(dd[0], dd[1]); const nn = [-dd[1] / L, dd[0] / L];
-        const c = centroid(R1); const s2 = Math.random() < .5 ? 1 : -1;
+        const c = centroid(R1); const s2 = RNG() < .5 ? 1 : -1;
         folds.push(mkFold(v0, dd, [c[0] + nn[0] * .1 * s2, c[1] + nn[1] * .1 * s2]));
       }
     } else {
-      const kl = Math.random() < .5, kt = Math.random() < .5;
+      const kl = RNG() < .5, kt = RNG() < .5;
       folds = [V(kl), Hz(kt)];
       if (level === 4) {
-        const x0 = kl ? 0 : .5, y0 = kt ? 0 : .5; const main = Math.random() < .5;
+        const x0 = kl ? 0 : .5, y0 = kt ? 0 : .5; const main = RNG() < .5;
         const o = main ? [x0, y0] : [x0 + .5, y0], d = main ? [1, 1] : [-1, 1];
-        const n = [-d[1] / Math.SQRT2, d[0] / Math.SQRT2]; const sg = Math.random() < .5 ? 1 : -1; const c = [x0 + .25, y0 + .25];
+        const n = [-d[1] / Math.SQRT2, d[0] / Math.SQRT2]; const sg = RNG() < .5 ? 1 : -1; const c = [x0 + .25, y0 + .25];
         folds.push(mkFold(o, d, [c[0] + n[0] * .1 * sg, c[1] + n[1] * .1 * sg]));
       }
     }
@@ -1148,14 +1200,20 @@ const Origami = (() => {
     posonly: 'あなの 場所{ばしょ}は 合{あ}っているけど、形{かたち}の 向{む}きが ちがうよ。ひろげると、かがみに うつしたように 向{む}きも 反対{はんたい}に なるよ。',
     shape: 'あなの 形{かたち}が ちがうよ。切{き}った 形{かたち}を よく 見{み}てね。'
   };
-  function run() {
-    const d = CFG.det;
+  const PROMPT = '紙{かみ}を おって、しましまの ところを 切{き}りとったよ。ひろげると、どんな 形{かたち}に なるかな？';
+  function make(d) {
     const nf = d.orN === 'mix' ? pick(['1', '2', '3']) : d.orN;
     const shp = d.orShape === 'mix' ? pick(['half', 'tri']) : d.orShape;
     const level = nf === '3' ? 4 : nf === '2' ? (shp === 'tri' ? 5 : 2) : (shp === 'tri' ? 3 : 1);
-    const count = d.orCut === 'mix' ? (Math.random() < .5 ? 1 : 2) : Number(d.orCut);
-    const P = gen(level, count) || gen(level, 1);
-    $('#q-prompt').innerHTML = R('紙{かみ}を おって、しましまの ところを 切{き}りとったよ。ひろげると、どんな 形{かたち}に なるかな？');
+    const count = d.orCut === 'mix' ? (RNG() < .5 ? 1 : 2) : Number(d.orCut);
+    return gen(level, count) || gen(level, 1);
+  }
+  function paper(P) {
+    return { prompt: PROMPT, fig: [stepsFig(P)], choices: P.opts.map(o => choiceSvg(o.h)), ans: P.opts.findIndex(o => o.why === 'ok') };
+  }
+  function run(P) {
+    P = P || make(CFG.det);
+    $('#q-prompt').innerHTML = R(PROMPT);
     $('#q-fig').appendChild(stepsFig(P));
     // ヒント：おり方の図の かわりに、おったり ひらいたり できる 紙を 出す
     hintBox('ヒント：紙{かみ}を おってみる', '切{き}る 前{まえ}の 紙{かみ}だよ。「おる」と「ひらく」で、おったり もどしたり できるよ。', tool => {
@@ -1182,7 +1240,7 @@ const Origami = (() => {
       v2.playAll();
     });
   }
-  return { run, gen };
+  return { run, gen, make, paper };
 })();
 
 /* ======================================================
@@ -1198,7 +1256,7 @@ const Tri = (() => {
   }
   // かどから のびる 線が まじった 正方形（見本の図に にた形）
   function sqSample() {
-    const a = .1, b = .9, r = .35 + Math.random() * .2;
+    const a = .1, b = .9, r = .35 + RNG() * .2;
     const segs = [[[a, a], [b, a]], [[b, a], [b, b]], [[b, b], [a, b]], [[a, b], [a, a]],
       [[a, a], [b, b]], [[a, .5], [b, .5]], [[a, a], [a + (b - a) * r, b]], [[b, a], [.5, .5]]];
     return { segs: symSq(segs), nb: 4 };
@@ -1233,8 +1291,8 @@ const Tri = (() => {
   function fan(k, h) {
     const A = [.5, .06], L = [.06, .94], Rt = [.94, .94];
     const segs = [[A, L], [A, Rt], [L, Rt]];
-    for (let i = 1; i <= k; i++) { const x = .06 + .88 * i / (k + 1) + (Math.random() - .5) * .1 / (k + 1); segs.push([A, [x, .94]]); }
-    for (let j = 1; j <= h; j++) { const t = j / (h + 1) + (Math.random() - .5) * .12 / (h + 1); const y = .06 + .88 * t; segs.push([[.5 - .44 * t, y], [.5 + .44 * t, y]]); }
+    for (let i = 1; i <= k; i++) { const x = .06 + .88 * i / (k + 1) + (RNG() - .5) * .1 / (k + 1); segs.push([A, [x, .94]]); }
+    for (let j = 1; j <= h; j++) { const t = j / (h + 1) + (RNG() - .5) * .12 / (h + 1); const y = .06 + .88 * t; segs.push([[.5 - .44 * t, y], [.5 + .44 * t, y]]); }
     return { segs, nb: 3 };
   }
   function sq(o) {
@@ -1393,11 +1451,21 @@ const Tri = (() => {
     const p = sv.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
     const q = p.matrixTransform(m.inverse()); return [q.x, q.y];
   }
-  function run() {
-    const d = CFG.det;
-    const gap = d.triGap === 'yes' || (d.triGap === 'mix' && Math.random() < .5);
+  const PROMPT = 'この 図{ず}の 中{なか}に、三角形{さんかくけい}は ぜんぶで いくつ あるかな？';
+  function make(d) {
+    const gap = d.triGap === 'yes' || (d.triGap === 'mix' && RNG() < .5);
     const P = gen(d.triR, gap);
-    $('#q-prompt').innerHTML = R('この 図{ず}の 中{なか}に、三角形{さんかくけい}は ぜんぶで いくつ あるかな？');
+    P.vals = countVals(P.tris.length);
+    return P;
+  }
+  function paper(P) {
+    const sv = S('svg', { viewBox: '-0.06 -0.06 1.12 1.12' });
+    drawLines(sv, P.segs, .012, COL.ink);
+    return { prompt: PROMPT, fig: [sv], choices: P.vals.map(x => H('span', { class: 'pnum' }, x + '<small>こ</small>')), ans: P.vals.indexOf(P.tris.length), num: P.tris.length };
+  }
+  function run(P) {
+    P = P || make(CFG.det);
+    $('#q-prompt').innerHTML = R(PROMPT);
     const fig = $('#q-fig');
     const label = H('div', { class: 'big-count', 'aria-live': 'polite' }, ''); label.hidden = true; fig.appendChild(label);
     const sv = S('svg', { viewBox: '-0.06 -0.06 1.12 1.12', class: 'tri-svg' });
@@ -1488,10 +1556,191 @@ const Tri = (() => {
         body: body + '<br>ぜんぶで ' + n + 'こ だよ。', replay: play
       });
       play();
-    });
+    }, P.vals);
   }
-  return { run, gen };
+  return { run, gen, make, paper };
 })();
+
+/* ======================================================
+   プリント（問題番号つき）と、プリントの答え合わせ
+   ====================================================== */
+const MODS = { overlap: Overlap, origami: Origami, count: Tri };
+const MODE_CH = { overlap: 'K', origami: 'F', count: 'C', mix: 'M' };
+const CH_MODE = { K: 'overlap', F: 'origami', C: 'count', M: 'mix' };
+// 見まちがえやすい O・I・L を つかわない 文字
+const B33 = '0123456789ABCDEFGHJKMNPQRSTUVWXYZ';
+const DET_SPEC = [['ovN', [2, 3, 4]], ['ovOp', ['id', 'flipX', 'cw', 'mix']], ['orN', ['1', '2', '3', 'mix']], ['orShape', ['half', 'tri', 'mix']],
+  ['orCut', ['1', '2', 'mix']], ['triR', [1, 2, 3, 4]], ['triGap', ['no', 'yes', 'mix']]];
+const APP_URL = 'https://sorafjah.github.io/zukei/';
+function packDet(d) {
+  let v = 0;
+  for (const [k, opts] of DET_SPEC) { const i = Math.max(0, opts.indexOf(d[k])); v = v * opts.length + i; }
+  let s = ''; for (let i = 0; i < 3; i++) { s = B33[v % 33] + s; v = Math.floor(v / 33); }
+  return s;
+}
+function unpackDet(str) {
+  let v = 0; for (const ch of str) { const i = B33.indexOf(ch); if (i < 0) return null; v = v * 33 + i; }
+  const d = {};
+  for (let j = DET_SPEC.length - 1; j >= 0; j--) { const [k, opts] = DET_SPEC[j]; d[k] = opts[v % opts.length]; v = Math.floor(v / opts.length); }
+  return v === 0 ? d : null;
+}
+// 番号の形：1（作り方の版）＋モード＋設定3文字－4けたの数
+function makeCode(mode, det, seed) { return '1' + MODE_CH[mode] + packDet(det) + '-' + seed; }
+function parseCode(s) {
+  s = String(s || '').replace(/[０-９Ａ-Ｚａ-ｚ]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 65248)).toUpperCase().replace(/[^0-9A-Z]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
+  const m = s.match(/^1([KFCM])([0-9A-Z]{3})(\d{4})$/);
+  if (!m) return null;
+  const det = unpackDet(m[2]); if (!det) return null;
+  return { mode: CH_MODE[m[1]], det, seed: m[3], code: '1' + m[1] + m[2] + '-' + m[3] };
+}
+function sheetProbs(c) {
+  const order = c.mode === 'mix' ? ['overlap', 'origami', 'count', 'overlap'] : [c.mode, c.mode, c.mode, c.mode];
+  return order.map((m, i) => withSeed(c.code + '#' + i, () => ({ m, P: MODS[m].make(c.det) })));
+}
+// 白黒印刷用の色
+function withPrintCol(fn) {
+  const keep = Object.assign({}, COL);
+  Object.assign(COL, { blue: '#1a1a1a', orange: '#333333', paper: '#bdbdbd', paperEdge: '#444444', ink: '#000000', dot: '#8a8a8a', boardEdge: '#9a9a9a', accent: '#333333' });
+  try { return fn(); } finally { Object.assign(COL, keep); }
+}
+function qrSvg(text) {
+  try {
+    if (typeof qrcode !== 'function') return '';
+    const q = qrcode(0, 'M'); q.addData(text); q.make();
+    return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+  } catch (e) { return ''; }
+}
+const PRINT_CSS = `
+@page{size:A4;margin:10mm 10mm 10mm 15mm}
+*{box-sizing:border-box}
+body{margin:0;font-family:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;font-size:12pt;color:#000;background:#fff}
+ruby rt{font-size:.5em}
+.page{width:185mm;height:276mm;display:flex;flex-direction:column;overflow:hidden;break-after:page;page-break-after:always}
+.page:last-of-type{break-after:auto;page-break-after:auto}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:6mm;margin-bottom:2mm}
+.title{font-size:14pt;font-weight:700}
+.name{margin-top:4mm;border-bottom:1px solid #000;width:85mm;padding-bottom:1mm}
+.code{display:flex;align-items:center;gap:3mm;font-size:10pt;text-align:right;line-height:1.6}
+.code svg{width:20mm;height:20mm}
+.code b{font-size:13pt;letter-spacing:.05em}
+.q{flex:1;display:grid;grid-template-columns:86mm 1fr;grid-template-rows:auto 1fr;column-gap:4mm;border-top:1px solid #999;padding:2mm 0;min-height:0}
+.p{grid-column:1/3;line-height:2}
+.fig{display:flex;align-items:center;justify-content:center;min-height:0}
+.fig>svg{width:100%;max-height:48mm}
+.steps{display:flex;align-items:center;gap:1mm;width:100%}
+.step{display:flex;flex-direction:column;align-items:center;font-size:8pt;flex:1 1 0;min-width:0}
+.step.big{flex:1.6 1 0}
+.step svg{width:100%;height:auto;max-height:30mm}
+.step.big svg{max-height:40mm}
+.step-arrow{font-size:10pt}
+.ch{display:grid;grid-template-columns:repeat(4,1fr);gap:2mm;align-items:center}
+.ch>div{display:flex;flex-direction:column;align-items:center;gap:1mm}
+.k{font-weight:700}
+.ch svg{width:100%;max-height:30mm}
+.pnum{font-size:20pt;font-weight:700}
+.pnum small{font-size:11pt;margin-left:1mm}
+.ans-table{border-collapse:collapse;margin-top:6mm;font-size:14pt}
+.ans-table td{border:1px solid #000;padding:3mm 8mm}
+.toolbar{display:none}
+@media screen{
+  body{background:#e9edf2}
+  .page{background:#fff;margin:8mm auto;padding:10mm 10mm 10mm 15mm;box-sizing:content-box;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;padding:10px;position:sticky;top:0;background:#fff;border-bottom:1px solid #ccc;z-index:2;font-size:14px}
+  .toolbar button{font:inherit;font-size:16px;font-weight:700;padding:8px 20px;min-height:44px;border-radius:10px;border:2px solid #2a6fdb;background:#2a6fdb;color:#fff;cursor:pointer}
+  [contenteditable]:focus{outline:2px dashed #2a6fdb}
+}
+@media print{.toolbar{display:none!important}}`;
+function sheetHTML(c, probs, withAns, forFile) {
+  const papers = withPrintCol(() => probs.map(pr => Object.assign({ m: pr.m }, MODS[pr.m].paper(pr.P))));
+  const qr = qrSvg(APP_URL + '#p' + c.code.replace('-', ''));
+  const head = `<header class="head"><div><div class="title" contenteditable="true">${R('重{かさ}ねる 折{お}る 数{かぞ}える　プリント')}</div><div class="name">なまえ</div></div>` +
+    `<div class="code">${qr}<div>${R('問題{もんだい}番号{ばんごう}')}<br><b>${c.code}</b></div></div></header>`;
+  const qs = papers.map((p, i) => `<section class="q"><div class="p"><b>${i + 1}</b>　<span contenteditable="true">${R(p.prompt)}</span>　こたえ（　　　　　）</div>` +
+    `<div class="fig">${p.fig.map(e => e.outerHTML).join('')}</div>` +
+    `<div class="ch">${p.choices.map((e, j) => `<div><span class="k">${KANA[j]}</span>${e.outerHTML}</div>`).join('')}</div></section>`).join('');
+  const ansPage = withAns ? `<div class="page"><header class="head"><div class="title">こたえ</div><div class="code"><div>${R('問題{もんだい}番号{ばんごう}')}<br><b>${c.code}</b></div></div></header>` +
+    `<table class="ans-table">${papers.map((p, i) => `<tr><td>${i + 1}</td><td>${KANA[p.ans]}${p.num ? '（' + p.num + 'こ）' : ''}</td></tr>`).join('')}</table>` +
+    `<p style="margin-top:8mm;line-height:2">${R('とき方{かた}は、アプリの「プリントの 答{こた}え合{あ}わせ」で 問題{もんだい}番号{ばんごう}を 入{い}れるか、QRコードを 読{よ}みこむと 見{み}られるよ。')}</p></div>` : '';
+  const toolbar = forFile ? `<div class="toolbar"><button type="button" onclick="window.print()">${R('印刷{いんさつ}する')}</button><span>${R('問題{もんだい}の 文{ぶん}は、クリックすると なおせます。')}</span></div>` : '';
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>重ねる折る数える プリント ${c.code}</title>` +
+    `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap"><style>${PRINT_CSS}</style></head><body>` +
+    toolbar + `<div class="page">${head}${qs}</div>${ansPage}</body></html>`;
+}
+
+/* --- プリントを つくる 画面 --- */
+const PR = { mode: 'mix', ans: false, seed: null, html: '' };
+function newSeed() { return String(1000 + Math.floor(Math.random() * 9000)); }
+function openPrint() { if (!PR.seed) PR.seed = newSeed(); buildPrint(); show('print'); }
+function buildPrint() {
+  const box = $('#print-body'); box.innerHTML = '';
+  const row = (label, ctrl) => { const r = H('div', { class: 'set-row' }); r.appendChild(H('div', { class: 'set-label' }, R(label))); r.appendChild(ctrl); box.appendChild(r); };
+  row('問題{もんだい}の しゅるい', seg([['かさねる', 'overlap'], ['おりがみ', 'origami'], ['かぞえる', 'count'], ['まぜる', 'mix']], PR.mode, v => { PR.mode = v; buildPrint(); }));
+  const lv = seg([1, 2, 3, 4].map(n => [String(n), n]), CFG.level, v => { setLevel(v); startLevel(); buildPrint(); });
+  lv.classList.add('big');
+  const lr = H('div', { class: 'set-row' }); lr.appendChild(H('div', { class: 'set-label' }, 'レベル')); lr.appendChild(lv);
+  if (!CFG.level) lr.appendChild(H('span', { class: 'ctrl-lab' }, R('（設定{せってい}で こまかく えらんだ 内容{ないよう}で 作{つく}るよ）')));
+  box.appendChild(lr);
+  row('答{こた}えの ページ', seg([['印刷{いんさつ}しない', false], ['印刷{いんさつ}する', true]].map(([l, v]) => [R(l), v]), PR.ans, v => { PR.ans = v; buildPrint(); }));
+  const c = parseCode(makeCode(PR.mode, CFG.det, PR.seed));
+  const info = H('div', { class: 'print-info' });
+  info.innerHTML = '<p>' + R('問題{もんだい}番号{ばんごう}') + '：<b class="pcode">' + c.code + '</b></p><p class="set-note">' +
+    R('職場{しょくば}などの iPadで、はじめの 画面{がめん}の「プリントの 答{こた}え合{あ}わせ」から この 番号{ばんごう}を 入{い}れるか、プリントの QRコードを 読{よ}みこむと、同{おな}じ 問題{もんだい}の ヒントと 答{こた}えを 見{み}せられます。') + '</p>';
+  box.appendChild(info);
+  const btns = H('div', { class: 'ctrl' });
+  ctrlBtn(btns, 'べつの 問題{もんだい}に する', () => { PR.seed = newSeed(); buildPrint(); });
+  const dl = H('button', { class: 'btn btn-primary btn-small', type: 'button' }, R('印刷用{いんさつよう}ファイルを ダウンロード')); btns.appendChild(dl);
+  const cp = H('button', { class: 'btn btn-sub btn-small', type: 'button' }, R('HTMLを コピーする')); btns.appendChild(cp);
+  box.appendChild(btns);
+  const msg = H('p', { class: 'msg', 'aria-live': 'polite' }, ''); box.appendChild(msg);
+  box.appendChild(H('p', { class: 'set-note' }, R('ダウンロードした ファイルを ブラウザで ひらいて、「印刷{いんさつ}する」を おしてください。プレビューの 中{なか}からは 印刷{いんさつ}できないことが あります。')));
+  const probs = sheetProbs(c);
+  PR.html = sheetHTML(c, probs, PR.ans, true);
+  const fr = H('iframe', { class: 'print-frame', title: 'プリントの みほん' });
+  fr.srcdoc = PR.html; box.appendChild(fr);
+  dl.addEventListener('click', () => {
+    try {
+      const url = URL.createObjectURL(new Blob([PR.html], { type: 'text/html' }));
+      const a = H('a', { href: url, download: 'kasaneru-oru-kazoeru-' + c.code + '.html' });
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      msg.innerHTML = R('ダウンロードしたよ。');
+    } catch (e) { msg.innerHTML = R('ダウンロードできませんでした。「HTMLを コピーする」を つかってください。'); }
+  });
+  cp.addEventListener('click', () => {
+    const ta = H('textarea'); ta.value = PR.html; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta);
+    ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) { }
+    ta.remove();
+    if (ok) msg.innerHTML = R('コピーしたよ。メモ帳{ちょう}などに はりつけて、.html で ほぞんしてください。');
+    else if (navigator.clipboard) navigator.clipboard.writeText(PR.html).then(() => { msg.innerHTML = R('コピーしたよ。'); }, () => { msg.innerHTML = R('コピーできませんでした。'); });
+  });
+}
+
+/* --- プリントの 答え合わせ 画面 --- */
+function openReview(code) {
+  show('review');
+  const inp = $('#review-code'); const msg = $('#review-msg'); const list = $('#review-list');
+  list.innerHTML = ''; msg.innerHTML = '';
+  if (code != null) inp.value = code;
+  if (!inp.value) return;
+  const c = parseCode(inp.value);
+  if (!c) { msg.innerHTML = R('番号{ばんごう}が 正{ただ}しくないみたい。プリントの 右上{みぎうえ}の 番号{ばんごう}を たしかめてね。'); return; }
+  inp.value = c.code;
+  const probs = sheetProbs(c);
+  list.appendChild(H('p', { class: 'ans-lead' }, R('見{み}たい 問題{もんだい}を えらんでね。')));
+  const grid = H('div', { class: 'review-grid' });
+  probs.forEach((pr, i) => {
+    const b = H('button', { class: 'mode-card review-card', type: 'button' }, '<span class="mode-name">' + (i + 1) + '</span><span class="mode-desc">' + R(MODE_NAME[pr.m]) + '</span>');
+    b.addEventListener('click', () => { unlockAudio(); startReview(c, probs, i); });
+    grid.appendChild(b);
+  });
+  list.appendChild(grid);
+}
+function startReview(c, probs, i) {
+  // 生成ずみの 問題を そのまま つかう
+  const fresh = sheetProbs(c);
+  SES = { mode: 'review', code: c, probs: fresh, total: fresh.length, idx: i, results: [] };
+  show('q'); renderQ();
+}
 
 /* ===== 設定画面 ===== */
 function sumText() { $('#cfg-sum').innerHTML = R(CFG.count + 'もん　・　効果音{こうかおん} ' + (CFG.sound ? 'ON' : 'OFF')); }
@@ -1507,6 +1756,9 @@ function buildSettings() {
   const keep = card.scrollTop;
   card.innerHTML = '';
   card.appendChild(H('h2', null, R('設定{せってい}')));
+  const pb = H('button', { class: 'btn btn-sub', type: 'button' }, R('プリントを つくる（印刷{いんさつ}用{よう}）'));
+  pb.addEventListener('click', () => { $('#settings').hidden = true; openPrint(); });
+  card.appendChild(pb);
   const row = (label, ctrl) => { const r = H('div', { class: 'set-row' }); r.appendChild(H('div', { class: 'set-label' }, R(label))); r.appendChild(ctrl); card.appendChild(r); return r; };
   const head = t => card.appendChild(H('h3', { class: 'set-h3' }, R(t)));
   const re = () => buildSettings();
@@ -1548,14 +1800,22 @@ function init() {
   document.querySelectorAll('.mode-card').forEach(b => b.addEventListener('click', () => { unlockAudio(); openMode(b.dataset.mode); }));
   $('#btn-gear').addEventListener('click', () => { unlockAudio(); buildSettings(); $('#settings').hidden = false; });
   $('#settings').addEventListener('click', e => { if (e.target.id === 'settings') closeSettings(); });
-  $('#btn-quit').addEventListener('click', () => { stopAnim(); show('start'); });
+  $('#btn-quit').addEventListener('click', () => { stopAnim(); if (SES && SES.probs) openReview(SES.code.code); else show('start'); });
+  $('#btn-review').addEventListener('click', () => { unlockAudio(); openReview(null); });
+  $('#review-back').addEventListener('click', () => show('start'));
+  $('#review-go').addEventListener('click', () => { unlockAudio(); openReview($('#review-code').value); });
+  $('#review-code').addEventListener('keydown', e => { if (e.key === 'Enter') openReview($('#review-code').value); });
+  $('#print-back').addEventListener('click', () => show('start'));
+  // QRコードから ひらいたとき（#p＋番号）
+  const fromHash = () => { try { const h = decodeURIComponent(location.hash || ''); if (/^#p/i.test(h)) openReview(h.slice(2)); } catch (e) { } };
+  fromHash(); window.addEventListener('hashchange', fromHash);
   $('#intro-back').addEventListener('click', () => show('start'));
   $('#res-again').addEventListener('click', () => { unlockAudio(); startMode(SES.mode); });
   $('#res-home').addEventListener('click', () => show('start'));
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 }
 if (typeof document !== 'undefined') init();
-if (typeof module !== 'undefined') module.exports = { Overlap, Origami, Tri };
+if (typeof module !== 'undefined') module.exports = { Overlap, Origami, Tri, parseCode, makeCode, sheetProbs };
 
 </script>
 </body>
