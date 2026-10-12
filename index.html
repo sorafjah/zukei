@@ -995,31 +995,45 @@ const Origami = (() => {
       const cand = A.filter(p => Math.hypot(p[0] - ct.c[0], p[1] - ct.c[1]) > .05)
         .sort((p, q) => Math.hypot(p[0] - ct.c[0], p[1] - ct.c[1]) - Math.hypot(q[0] - ct.c[0], q[1] - ct.c[1]));
       let got = null;
-      for (const p of cand.slice(0, 4)) { got = cutAt(Rg, p, ct.type, ct.rot, ct.s); if (got) break; }
+      const a0 = Math.abs(polyArea(ct.poly));
+      // 紙の はしで 切れ方が かわり、形が ちがって 見える ものは つかわない
+      for (const p of cand.slice(0, 6)) { const g = cutAt(Rg, p, ct.type, ct.rot, ct.s); if (g && (ct.type === 'circle' || g.length === ct.poly.length) && Math.abs(Math.abs(polyArea(g)) / a0 - 1) < .25) { got = g; break; } }
       if (!got) return null;
       out.push(got);
     }
     return out;
   }
-  // 同じ場所で、ちがう形に 切る
-  function swapCuts(Rg, cuts) {
+  // 切る場所を、おった紙の 反対がわに（おり目がわ ⇔ ひらいている がわ）
+  function sideCuts(Rg, cuts, axis, which) {
+    const xs = Rg.map(p => p[0]), ys = Rg.map(p => p[1]);
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
     const out = [];
-    for (const ct of cuts) {
-      const others = shuffle(['circle', 'square', 'tri', 'diamond'].filter(x => x !== ct.type));
-      let got = null;
-      for (const ty of others) { got = cutAt(Rg, ct.c, ty, ct.rot, ct.s); if (got) break; }
+    for (let i = 0; i < cuts.length; i++) {
+      const ct = cuts[i];
+      if (which >= 0 && i !== which) { out.push(ct.poly); continue; }
+      const c = axis === 'x' ? [2 * cx - ct.c[0], ct.c[1]] : [ct.c[0], 2 * cy - ct.c[1]];
+      const got = cutAt(Rg, c, ct.type, ct.rot, ct.s);
       if (!got) return null;
       out.push(got);
     }
     return out;
   }
-  // 場所は 正しいが、形を かがみうつしに していない（向きが そのまま）
-  function unfoldPosOnly(polys, folds) {
-    let Sx = polys.slice();
-    for (let i = folds.length - 1; i >= 0; i--) {
-      Sx = Sx.concat(Sx.map(pl => { const c = centroid(pl), c2 = reflectP(c, folds[i]); return pl.map(p => [p[0] + c2[0] - c[0], p[1] + c2[1] - c[1]]); }));
+  // 同じ場所・同じ形で、向きだけ ちがう（三角の 向き）
+  function orientCuts(Rg, cuts) {
+    const out = []; let changed = false;
+    for (const ct of cuts) {
+      let got = null;
+      if (ct.type === 'tri') {
+        // 紙の はしで 切れて 形が かわって 見えるものは つかわない（同じ形で 向きだけ ちがうもの）
+        const a0 = Math.abs(polyArea(ct.poly));
+        for (const r of shuffle([-Math.PI / 2, Math.PI / 2, 0, Math.PI].filter(r => r !== ct.rot))) {
+          const g = cutAt(Rg, ct.c, 'tri', r, ct.s);
+          if (g && g.length === ct.poly.length && Math.abs(Math.abs(polyArea(g)) / a0 - 1) < .2) { got = g; break; }
+        }
+      }
+      if (got) { out.push(got); changed = true; } else out.push(ct.poly);
     }
-    return Sx;
+    return changed ? out : null;
   }
   function unfold(polys, folds, mapFor, skip0) {
     let Sx = polys.slice();
@@ -1049,18 +1063,18 @@ const Origami = (() => {
       const correct = unfold(polys, folds, refl);
       const rc = raster(correct);
       const cands = [];
-      cands.push({ h: unfold(polys, folds, i => { const c = centroid(regions[i + 1]), c2 = reflectP(c, folds[i]); return p => [p[0] + c2[0] - c[0], p[1] + c2[1] - c[1]]; }), why: 'translate' });
-      cands.push({ h: unfold(polys, folds, refl, true), why: 'missing' });
+      // どれも「本当に おって 切ったら できる 形」に する（ありえない形は 出さない）
+      const oc = orientCuts(Rf, cuts); if (oc) cands.push({ h: unfold(oc, folds, refl), why: 'orient' });
+      for (const ax of shuffle(['x', 'y'])) for (const w of [-1, rnd(cuts.length)]) { const sc = sideCuts(Rf, cuts, ax, w); if (sc) cands.push({ h: unfold(sc, folds, refl), why: 'side' }); }
+      for (let k = 0; k < 3; k++) { const nc = nearCuts(Rf, cuts); if (nc) cands.push({ h: unfold(nc, folds, refl), why: 'position' }); }
       const f0 = folds[0]; const pf = { o: [.5, .5], d: [-f0.d[1], f0.d[0]] };
       cands.push({ h: unfold(polys, folds, i => i === 0 ? (p => reflectP(p, pf)) : refl(i)), why: 'perp' });
-      cands.push({ h: unfoldPosOnly(polys, folds), why: 'posonly' });
-      for (let k = 0; k < 2; k++) { const nc = nearCuts(Rf, cuts); if (nc) cands.push({ h: unfold(nc, folds, refl), why: 'position' }); }
-      const sc = swapCuts(Rf, cuts); if (sc) cands.push({ h: unfold(sc, folds, refl), why: 'shape' });
       const MT = [p => [1 - p[0], p[1]], p => [p[0], 1 - p[1]], p => [p[1], p[0]], p => [1 - p[1], 1 - p[0]]];
-      for (const mt of shuffle(MT).slice(0, 2)) cands.push({ h: correct.map(pl => pl.map(mt)), why: 'position' });
+      for (const mt of shuffle(MT).slice(0, 2)) cands.push({ h: correct.map(pl => pl.map(mt)), why: 'mirror' });
+      cands.push({ h: unfold(polys, folds, refl, true), why: 'missing' });
       // まよいやすい ものから えらぶ（あなの数が へる「ひろげわすれ」は 最後の 手段）
-      const hard = cands.filter(c => c.why === 'translate' || c.why === 'posonly');
-      const mid = shuffle(cands.filter(c => ['position', 'perp', 'shape'].includes(c.why)));
+      const hard = shuffle(cands.filter(c => c.why === 'orient' || c.why === 'side'));
+      const mid = shuffle(cands.filter(c => ['position', 'perp', 'mirror'].includes(c.why)));
       const easy = cands.filter(c => c.why === 'missing');
       const picked = []; const rs = [rc];
       for (const c of hard.concat(mid, easy)) {
@@ -1070,7 +1084,7 @@ const Origami = (() => {
       }
       if (picked.length < 3) continue;
       const P = { folds, regions, cuts, correct, opts: shuffle([{ h: correct, why: 'ok' }].concat(picked)) };
-      if (picked.some(c => c.why === 'missing') || !picked.some(c => c.why === 'translate' || c.why === 'posonly')) { if (!fallback) fallback = P; continue; }
+      if (picked.some(c => c.why === 'missing') || !picked.some(c => c.why === 'orient' || c.why === 'side')) { if (!fallback) fallback = P; continue; }
       return P;
     }
     return fallback;
@@ -1190,12 +1204,12 @@ const Origami = (() => {
     return box;
   }
   const WHY = {
-    translate: 'ひろげると、あなは おりめを はさんで、かがみに うつしたように 反対{はんたい}向{む}きに できるよ。',
+    orient: 'あなの 場所{ばしょ}は 合{あ}っているけど、形{かたち}の 向{む}きが ちがうよ。切{き}った 形{かたち}の 向{む}きを よく 見{み}てね。',
+    side: 'あなが、おった 紙{かみ}の 反対{はんたい}がわに できているよ。おりめの がわか、ひらいている がわかを たしかめてね。',
     missing: 'ひろげるのを わすれている ところが あるよ。おった 回数{かいすう}だけ ひろげるよ。',
     perp: 'おりめの 場所{ばしょ}が ちがうよ。どこで おったかを たしかめてね。',
-    position: 'あなの 場所{ばしょ}が ちがうよ。',
-    posonly: 'あなの 場所{ばしょ}は 合{あ}っているけど、形{かたち}の 向{む}きが ちがうよ。ひろげると、かがみに うつしたように 向{む}きも 反対{はんたい}に なるよ。',
-    shape: 'あなの 形{かたち}が ちがうよ。切{き}った 形{かたち}を よく 見{み}てね。'
+    position: 'あなの 場所{ばしょ}が 少{すこ}し ちがうよ。',
+    mirror: 'あなの 場所{ばしょ}が ちがうよ。上下{じょうげ}や 左右{さゆう}を たしかめてね。'
   };
   const PROMPT = '紙{かみ}を おって、ぬった ところを 切{き}りとったよ。ひろげると、どんな 形{かたち}に なるかな？';
   function make(d) {
