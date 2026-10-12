@@ -756,10 +756,10 @@ const Overlap = (() => {
       if (from === to) { if (done) done(); return; }
       runSeq([{ dur: dur * Math.max(.3, Math.abs(to - from)), update: t => { v.st[key] = from + (to - from) * t; apply(); } }], done);
     }
-    v.turn = () => tween('u', v.st.u > .5 ? 0 : 1, 1.0);
-    v.slide = () => tween('s', v.st.s > .5 ? 0 : 1, 1.0);
-    v.reset = () => tween('s', 0, .8, () => tween('u', 0, .8));
-    v.playAll = () => { stopAnim(); v.st.u = 0; v.st.s = 0; apply(); runSeq([{ dur: .5, linear: true }], () => tween('u', P.op === 'id' ? 0 : 1, 1.1, () => tween('s', 1, 1.1))); };
+    v.turn = () => tween('u', v.st.u > .5 ? 0 : 1, 1.8);
+    v.slide = () => tween('s', v.st.s > .5 ? 0 : 1, 1.8);
+    v.reset = () => tween('s', 0, 1.2, () => tween('u', 0, 1.2));
+    v.playAll = () => { stopAnim(); v.st.u = 0; v.st.s = 0; apply(); runSeq([{ dur: 1.0, linear: true }], () => tween('u', P.op === 'id' ? 0 : 1, 2.0, () => runSeq([{ dur: .8, linear: true }], () => tween('s', 1, 2.2)))); };
     v.enable = () => { v.enabled = true; g.classList.add('drag-on'); };
     let drag = null;
     g.addEventListener('pointerdown', e => {
@@ -850,6 +850,12 @@ const Origami = (() => {
   function mkFold(o, d, kp) { const L = Math.hypot(d[0], d[1]); const f = { o, d: [d[0] / L, d[1] / L] }; f.ks = Math.sign(sideOf(kp, f)); return f; }
   const keepFn = f => p => sideOf(p, f) * f.ks;
   const moveFn = f => p => -sideOf(p, f) * f.ks;
+  // ほぼ 同じ点を 1つに まとめる
+  function dedupe(poly) {
+    const out = [];
+    for (const p of poly) if (!out.some(q => Math.hypot(q[0] - p[0], q[1] - p[1]) < 1e-6)) out.push(p);
+    return out;
+  }
   function makeFolds(level) {
     const V = kl => mkFold([.5, 0], [0, 1], [kl ? .25 : .75, .5]);
     const Hz = kt => mkFold([0, .5], [1, 0], [.5, kt ? .25 : .75]);
@@ -861,7 +867,7 @@ const Origami = (() => {
       folds = [mkFold(o, d, [.5 + n[0] * .2 * sg, .5 + n[1] * .2 * sg])];
       if (level === 5) {
         // 三角に おった紙を、もういちど 半分の 三角に おる（直角の かどから 長い辺の まん中へ）
-        const R1 = clipHalf(SQ, keepFn(folds[0]));
+        const R1 = dedupe(clipHalf(SQ, keepFn(folds[0])));
         let vi = 0;
         R1.forEach((p, i) => { const a = sub(R1[(i + R1.length - 1) % R1.length], p), b = sub(R1[(i + 1) % R1.length], p); if (Math.abs(dot(a, b)) < 1e-6) vi = i; });
         const v0 = R1[vi], a1 = R1[(vi + 1) % R1.length], a2 = R1[(vi + 2) % R1.length];
@@ -881,7 +887,7 @@ const Origami = (() => {
       }
     }
     const regions = [SQ];
-    for (const f of folds) regions.push(clipHalf(regions[regions.length - 1], keepFn(f)));
+    for (const f of folds) regions.push(dedupe(clipHalf(regions[regions.length - 1], keepFn(f))));
     return { folds, regions };
   }
   function anchors(Rg) {
@@ -912,9 +918,54 @@ const Origami = (() => {
       if (cl.length < 3) continue;
       const ar = Math.abs(polyArea(cl));
       if (ar < Math.abs(polyArea(full)) * .22 || ar > Rarea * .4) continue;
-      res.push({ c, poly: cl });
+      res.push({ c, poly: cl, type, rot, s });
     }
     return res.length === count ? res : null;
+  }
+  // 同じ形を べつの場所に（または同じ場所に べつの形で）切る
+  function cutAt(Rg, c, type, rot, s) {
+    const full = shapePoly(type, c, s, rot);
+    const cl = clipConvex(full, Rg);
+    if (cl.length < 3) return null;
+    const ar = Math.abs(polyArea(cl));
+    if (ar < Math.abs(polyArea(full)) * .22 || ar > Math.abs(polyArea(Rg)) * .4) return null;
+    return cl;
+  }
+  // 近くの 場所に ずらした 切り方
+  function nearCuts(Rg, cuts) {
+    const A = anchors(Rg); const out = [];
+    const k = rnd(cuts.length);
+    for (let i = 0; i < cuts.length; i++) {
+      const ct = cuts[i];
+      if (i !== k) { out.push(ct.poly); continue; }
+      const cand = A.filter(p => Math.hypot(p[0] - ct.c[0], p[1] - ct.c[1]) > .05)
+        .sort((p, q) => Math.hypot(p[0] - ct.c[0], p[1] - ct.c[1]) - Math.hypot(q[0] - ct.c[0], q[1] - ct.c[1]));
+      let got = null;
+      for (const p of cand.slice(0, 4)) { got = cutAt(Rg, p, ct.type, ct.rot, ct.s); if (got) break; }
+      if (!got) return null;
+      out.push(got);
+    }
+    return out;
+  }
+  // 同じ場所で、ちがう形に 切る
+  function swapCuts(Rg, cuts) {
+    const out = [];
+    for (const ct of cuts) {
+      const others = shuffle(['circle', 'square', 'tri', 'diamond'].filter(x => x !== ct.type));
+      let got = null;
+      for (const ty of others) { got = cutAt(Rg, ct.c, ty, ct.rot, ct.s); if (got) break; }
+      if (!got) return null;
+      out.push(got);
+    }
+    return out;
+  }
+  // 場所は 正しいが、形を かがみうつしに していない（向きが そのまま）
+  function unfoldPosOnly(polys, folds) {
+    let Sx = polys.slice();
+    for (let i = folds.length - 1; i >= 0; i--) {
+      Sx = Sx.concat(Sx.map(pl => { const c = centroid(pl), c2 = reflectP(c, folds[i]); return pl.map(p => [p[0] + c2[0] - c[0], p[1] + c2[1] - c[1]]); }));
+    }
+    return Sx;
   }
   function unfold(polys, folds, mapFor, skip0) {
     let Sx = polys.slice();
@@ -948,20 +999,24 @@ const Origami = (() => {
       cands.push({ h: unfold(polys, folds, refl, true), why: 'missing' });
       const f0 = folds[0]; const pf = { o: [.5, .5], d: [-f0.d[1], f0.d[0]] };
       cands.push({ h: unfold(polys, folds, i => i === 0 ? (p => reflectP(p, pf)) : refl(i)), why: 'perp' });
-      for (let k = 0; k < 3; k++) { const c2 = makeCuts(Rf, level, count); if (c2) cands.push({ h: unfold(c2.map(c => c.poly), folds, refl), why: 'position' }); }
+      cands.push({ h: unfoldPosOnly(polys, folds), why: 'posonly' });
+      for (let k = 0; k < 2; k++) { const nc = nearCuts(Rf, cuts); if (nc) cands.push({ h: unfold(nc, folds, refl), why: 'position' }); }
+      const sc = swapCuts(Rf, cuts); if (sc) cands.push({ h: unfold(sc, folds, refl), why: 'shape' });
       const MT = [p => [1 - p[0], p[1]], p => [p[0], 1 - p[1]], p => [p[1], p[0]], p => [1 - p[1], 1 - p[0]]];
-      const mt = pick(MT); cands.push({ h: correct.map(pl => pl.map(mt)), why: 'position' });
-      const first = cands.filter(c => c.why === 'translate' || c.why === 'missing');
-      const rest = shuffle(cands.filter(c => !(c.why === 'translate' || c.why === 'missing')));
+      for (const mt of shuffle(MT).slice(0, 2)) cands.push({ h: correct.map(pl => pl.map(mt)), why: 'position' });
+      // まよいやすい ものから えらぶ（あなの数が へる「ひろげわすれ」は 最後の 手段）
+      const hard = cands.filter(c => c.why === 'translate' || c.why === 'posonly');
+      const mid = shuffle(cands.filter(c => ['position', 'perp', 'shape'].includes(c.why)));
+      const easy = cands.filter(c => c.why === 'missing');
       const picked = []; const rs = [rc];
-      for (const c of first.concat(rest)) {
+      for (const c of hard.concat(mid, easy)) {
         const r = raster(c.h);
-        if (rs.some(x => rdiff(x, r) < 14)) continue;
+        if (rs.some(x => rdiff(x, r) < 10)) continue;
         rs.push(r); picked.push(c); if (picked.length === 3) break;
       }
       if (picked.length < 3) continue;
       const P = { folds, regions, cuts, correct, opts: shuffle([{ h: correct, why: 'ok' }].concat(picked)) };
-      if (!picked.some(c => c.why === 'translate' || c.why === 'missing')) { fallback = P; continue; }
+      if (picked.some(c => c.why === 'missing') || !picked.some(c => c.why === 'translate' || c.why === 'posonly')) { if (!fallback) fallback = P; continue; }
       return P;
     }
     return fallback;
@@ -1066,13 +1121,13 @@ const Origami = (() => {
       if ((dir > 0 && k >= n) || (dir < 0 && k <= 0)) { if (done) done(); return; }
       const i = dir > 0 ? k : k - 1; const from = dir > 0 ? 1 : -1, to = -from;
       v.busy = true;
-      runSeq([{ dur: 1.1, start: () => { draw(0, i); setFlap(from); }, update: t => setFlap(from + (to - from) * t) }],
+      runSeq([{ dur: 2.0, start: () => { draw(0, i); setFlap(from); }, update: t => setFlap(from + (to - from) * t) }],
         () => { v.k = k + dir; draw(v.k, null); v.busy = false; changed(); if (done) done(); });
     };
     v.playAll = () => {
       stopAnim(); v.busy = false; v.k = n; draw(n, null); changed();
-      const chain = () => { if (v.k > 0) v.go(-1, () => runSeq([{ dur: .3, linear: true }], chain)); };
-      runSeq([{ dur: .6, linear: true }], chain);
+      const chain = () => { if (v.k > 0) v.go(-1, () => runSeq([{ dur: .9, linear: true }], chain)); };
+      runSeq([{ dur: 1.0, linear: true }], chain);
     };
     draw(v.k, null);
     return v;
@@ -1090,7 +1145,9 @@ const Origami = (() => {
     translate: 'ひろげると、あなは おりめを はさんで、かがみに うつしたように 反対{はんたい}向{む}きに できるよ。',
     missing: 'ひろげるのを わすれている ところが あるよ。おった 回数{かいすう}だけ ひろげるよ。',
     perp: 'おりめの 場所{ばしょ}が ちがうよ。どこで おったかを たしかめてね。',
-    position: 'あなの 場所{ばしょ}が ちがうよ。'
+    position: 'あなの 場所{ばしょ}が ちがうよ。',
+    posonly: 'あなの 場所{ばしょ}は 合{あ}っているけど、形{かたち}の 向{む}きが ちがうよ。ひろげると、かがみに うつしたように 向{む}きも 反対{はんたい}に なるよ。',
+    shape: 'あなの 形{かたち}が ちがうよ。切{き}った 形{かたち}を よく 見{み}てね。'
   };
   function run() {
     const d = CFG.det;
@@ -1414,7 +1471,7 @@ const Tri = (() => {
       };
       const play = () => {
         label.hidden = false; showGap();
-        const steps = items.map((o, i) => ({ dur: .6, linear: true, start: () => { fillTri(o.t); label.textContent = 'へや' + o.r + 'つ ・ ' + (i + 1) + 'こめ'; } }));
+        const steps = items.map((o, i) => ({ dur: 1.1, linear: true, start: () => { fillTri(o.t); label.textContent = 'へや' + o.r + 'つ ・ ' + (i + 1) + 'こめ'; } }));
         runSeq(steps, () => { fillTri(null); label.textContent = 'ぜんぶで ' + n + 'こ'; });
       };
       let body = '線{せん}で 分{わ}けられた 1つ1つの ところを「へや」と よぶよ。へや 1つの 三角形{さんかくけい}、へや 2つを 合{あ}わせた 三角形{さんかくけい}…と、へやの 数{かず}ごとに、上{うえ}から・左{ひだり}から じゅんばんに 数{かぞ}えると、もれなく 数{かぞ}えられるよ。';
