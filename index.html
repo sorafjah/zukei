@@ -49,6 +49,7 @@ svg{touch-action:manipulation}
 .intro-list{font-size:20px;line-height:2.3;margin:0;padding-left:1.6em;display:grid;gap:4px}
 .intro-btns{display:flex;justify-content:center}
 #intro-go{min-width:220px;min-height:60px;font-size:24px}
+.grp-h{margin:10px 0 2px!important;font-weight:700;color:var(--accent)}
 .set-h3{font-size:18px;margin:18px 0 0;color:var(--accent)}
 .set-note{margin:8px 0 0;font-size:15px;color:var(--sub);line-height:2}
 .mode-card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-align:center;transition:transform .1s,border-color .15s}
@@ -340,12 +341,12 @@ function reflectP(p, f) { const v = sub(p, f.o); const a = dot(v, f.d); return [
 /* ===== 設定 ===== */
 // レベルごとの きまり（こまかい設定の 初期値）
 const PRESET = {
-  1: { ovN: 2, ovOp: 'id', orFold: '1', orCut: '1', triR: 1, triGap: 'no' },
-  2: { ovN: 3, ovOp: 'id', orFold: '2', orCut: 'mix', triR: 2, triGap: 'no' },
-  3: { ovN: 3, ovOp: 'flipX', orFold: 'tri', orCut: 'mix', triR: 3, triGap: 'no' },
-  4: { ovN: 3, ovOp: 'cw', orFold: '3', orCut: '1', triR: 4, triGap: 'mix' }
+  1: { ovN: 2, ovOp: 'id', orN: '1', orShape: 'mix', orCut: '1', triR: 1, triGap: 'no' },
+  2: { ovN: 3, ovOp: 'id', orN: '2', orShape: 'mix', orCut: '1', triR: 2, triGap: 'no' },
+  3: { ovN: 3, ovOp: 'flipX', orN: '3', orShape: 'mix', orCut: '1', triR: 3, triGap: 'no' },
+  4: { ovN: 3, ovOp: 'cw', orN: '3', orShape: 'mix', orCut: '2', triR: 4, triGap: 'mix' }
 };
-const DEF = { level: 1, det: Object.assign({}, PRESET[1]), ovKind: 'line', count: 5, sound: true, cans: 'choice', intro: true };
+const DEF = { level: 1, det: Object.assign({}, PRESET[1]), count: 5, sound: true, cans: 'choice', intro: true };
 function loadCfg() {
   try {
     const s = JSON.parse(localStorage.getItem('zukei-renshu-cfg2') || 'null') || {};
@@ -471,6 +472,7 @@ const INTRO = {
   count: [
     '図{ず}の 中{なか}に 三角形{さんかくけい}が いくつ あるかを 数{かぞ}えるよ。',
     '小{ちい}さい 三角形{さんかくけい}も、いくつかが 合{あ}わさった 大{おお}きい 三角形{さんかくけい}も 数{かぞ}えるよ。',
+    '線{せん}で 分{わ}けられた 小{ちい}さい「へや」1つの 三角形{さんかくけい}から、へや 2つ、3つ…と じゅんばんに 数{かぞ}えると、もれなく 数{かぞ}えられるよ。',
     '点{てん}を 3つ タップすると、見{み}つけた 三角形{さんかくけい}に 色{いろ}が つくよ。',
     '線{せん}が とちゅうで とぎれている ところに 気{き}をつけてね。'
   ],
@@ -810,7 +812,7 @@ const Overlap = (() => {
   function run() {
     const d = CFG.det;
     const op = d.ovOp === 'mix' ? pick(['id', 'flipX', 'cw']) : d.ovOp;
-    const kind = CFG.ovKind === 'both' ? pick(['line', 'shape']) : CFG.ovKind;
+    const kind = 'line';
     const P = gen({ n: d.ovN, op, kind });
     const prompt = op === 'id' ? '2まいの 板{いた}を、そのまま 重{かさ}ねると、どんな 形{かたち}に なるかな？'
       : op === 'flipX' ? '右{みぎ}の 板{いた}を うらがえして（左{ひだり}と 右{みぎ}を 入{い}れかえて）、左{ひだり}の 板{いた}に 重{かさ}ねると、どんな 形{かたち}に なるかな？'
@@ -853,10 +855,21 @@ const Origami = (() => {
     const Hz = kt => mkFold([0, .5], [1, 0], [.5, kt ? .25 : .75]);
     let folds;
     if (level === 1) folds = [pick([V(true), V(false), Hz(true), Hz(false)])];
-    else if (level === 3) {
+    else if (level === 3 || level === 5) {
       const main = Math.random() < .5; const o = main ? [0, 0] : [1, 0], d = main ? [1, 1] : [-1, 1];
       const n = [-d[1] / Math.SQRT2, d[0] / Math.SQRT2]; const sg = Math.random() < .5 ? 1 : -1;
       folds = [mkFold(o, d, [.5 + n[0] * .2 * sg, .5 + n[1] * .2 * sg])];
+      if (level === 5) {
+        // 三角に おった紙を、もういちど 半分の 三角に おる（直角の かどから 長い辺の まん中へ）
+        const R1 = clipHalf(SQ, keepFn(folds[0]));
+        let vi = 0;
+        R1.forEach((p, i) => { const a = sub(R1[(i + R1.length - 1) % R1.length], p), b = sub(R1[(i + 1) % R1.length], p); if (Math.abs(dot(a, b)) < 1e-6) vi = i; });
+        const v0 = R1[vi], a1 = R1[(vi + 1) % R1.length], a2 = R1[(vi + 2) % R1.length];
+        const mid = [(a1[0] + a2[0]) / 2, (a1[1] + a2[1]) / 2];
+        const dd = sub(mid, v0), L = Math.hypot(dd[0], dd[1]); const nn = [-dd[1] / L, dd[0] / L];
+        const c = centroid(R1); const s2 = Math.random() < .5 ? 1 : -1;
+        folds.push(mkFold(v0, dd, [c[0] + nn[0] * .1 * s2, c[1] + nn[1] * .1 * s2]));
+      }
     } else {
       const kl = Math.random() < .5, kt = Math.random() < .5;
       folds = [V(kl), Hz(kt)];
@@ -887,7 +900,7 @@ const Origami = (() => {
     return out;
   }
   function makeCuts(Rg, level, count) {
-    const s = { 1: .11, 2: .085, 3: .1, 4: .065 }[level];
+    const s = { 1: .11, 2: .085, 3: .1, 4: .065, 5: .075 }[level];
     const A = shuffle(anchors(Rg)); const res = []; const Rarea = Math.abs(polyArea(Rg));
     for (const c of A) {
       if (res.length >= count) break;
@@ -1081,8 +1094,9 @@ const Origami = (() => {
   };
   function run() {
     const d = CFG.det;
-    const fold = d.orFold === 'mix' ? pick(['1', '2', 'tri', '3']) : d.orFold;
-    const level = { '1': 1, '2': 2, 'tri': 3, '3': 4 }[fold];
+    const nf = d.orN === 'mix' ? pick(['1', '2', '3']) : d.orN;
+    const shp = d.orShape === 'mix' ? pick(['half', 'tri']) : d.orShape;
+    const level = nf === '3' ? 4 : nf === '2' ? (shp === 'tri' ? 5 : 2) : (shp === 'tri' ? 3 : 1);
     const count = d.orCut === 'mix' ? (Math.random() < .5 ? 1 : 2) : Number(d.orCut);
     const P = gen(level, count) || gen(level, 1);
     $('#q-prompt').innerHTML = R('紙{かみ}を おって、しましまの ところを 切{き}りとったよ。ひろげると、どんな 形{かたち}に なるかな？');
@@ -1111,7 +1125,46 @@ const Origami = (() => {
    モード3 かぞえる（三角形）
    ====================================================== */
 const Tri = (() => {
-  const RANGE = { 1: [2, 4], 2: [5, 10], 3: [8, 13], 4: [14, 22] };
+  const RANGE = { 1: [2, 4], 2: [4, 9], 3: [8, 12], 4: [12, 22] };
+  // 正方形の 8とおりの 向き（まわす・うらがえす）
+  function symSq(segs) {
+    const k = rnd(8);
+    const f = ([x, y]) => { let p = [x - .5, y - .5]; for (let i = 0; i < k % 4; i++) p = [-p[1], p[0]]; if (k >= 4) p = [-p[0], p[1]]; return [p[0] + .5, p[1] + .5]; };
+    return segs.map(s => [f(s[0]), f(s[1])]);
+  }
+  // かどから のびる 線が まじった 正方形（見本の図に にた形）
+  function sqSample() {
+    const a = .1, b = .9, r = .35 + Math.random() * .2;
+    const segs = [[[a, a], [b, a]], [[b, a], [b, b]], [[b, b], [a, b]], [[a, b], [a, a]],
+      [[a, a], [b, b]], [[a, .5], [b, .5]], [[a, a], [a + (b - a) * r, b]], [[b, a], [.5, .5]]];
+    return { segs: symSq(segs), nb: 4 };
+  }
+  // かど・辺のまん中・まん中の点を むすぶ 線を ランダムに 引いた 正方形
+  function sqRand() {
+    const a = .1, b = .9, m = .5;
+    const C = [[a, a], [b, a], [b, b], [a, b]], Mi = [[m, a], [b, m], [m, b], [a, m]], O = [m, m];
+    const e = rnd(4), t = pick([.3, .35, .65, .7]);
+    const E = [C[e][0] + (C[(e + 1) % 4][0] - C[e][0]) * t, C[e][1] + (C[(e + 1) % 4][1] - C[e][1]) * t];
+    const P = C.concat(Mi, [O, E]);
+    const onEdge = (p, q) => (Math.abs(p[0] - q[0]) < 1e-9 && (Math.abs(p[0] - a) < 1e-9 || Math.abs(p[0] - b) < 1e-9)) || (Math.abs(p[1] - q[1]) < 1e-9 && (Math.abs(p[1] - a) < 1e-9 || Math.abs(p[1] - b) < 1e-9));
+    const cand = [];
+    for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) if (!onEdge(P[i], P[j])) cand.push([P[i], P[j]]);
+    for (let t2 = 0; t2 < 200; t2++) {
+      const k = 3 + rnd(2); const ch = shuffle(cand.slice()).slice(0, k);
+      let ok = true;
+      for (let i = 0; i < ch.length && ok; i++) for (let j = i + 1; j < ch.length && ok; j++) {
+        const d1 = sub(ch[i][1], ch[i][0]), d2 = sub(ch[j][1], ch[j][0]);
+        if (Math.abs(crs(d1, d2)) < 1e-9 && Math.abs(crs(d1, sub(ch[j][0], ch[i][0]))) < 1e-9) ok = false;
+      }
+      if (!ok) continue;
+      // まん中の点で 終わる線は、ほかの線が そこを 通るときだけ
+      const endsO = ch.filter(s => s.some(p => p === O));
+      if (endsO.length && !ch.some(s => !s.includes(O) && onSeg(O, s)) && endsO.length < 2) continue;
+      const segs = [[C[0], C[1]], [C[1], C[2]], [C[2], C[3]], [C[3], C[0]]].concat(ch);
+      return { segs, nb: 4 };
+    }
+    return sq({ d1: 1, d2: 1 });
+  }
   // 図のもと。nb は外がわの線の本数（とぎれさせるのは内がわの線だけ）
   function fan(k, h) {
     const A = [.5, .06], L = [.06, .94], Rt = [.94, .94];
@@ -1201,6 +1254,8 @@ const Tri = (() => {
     [{ d1: 1 }, { d1: 1, mh: 1 }, { d1: 1, d2: 1 }, { d1: 1, d2: 1, mh: 1 }, { d1: 1, d2: 1, mh: 1, mv: 1 }, { d1: 1, mh: 1, mv: 1 }].forEach(o => c.push(() => sq(o)));
     for (const l of ['d1', 'd2', 'X']) for (const r of ['d1', 'd2', 'X']) c.push(() => rect2(l, r));
     c.push(() => triGrid(2)); c.push(() => triGrid(3)); c.push(() => triGrid(3));
+    for (let i = 0; i < 4; i++) c.push(sqSample);
+    for (let i = 0; i < 8; i++) c.push(sqRand);
     return c;
   }
   function gen(range, gap) {
@@ -1213,7 +1268,7 @@ const Tri = (() => {
           if (full < lo) continue;
           F = withGap(F); if (!F) continue;
           const an = analyze(F.segs);
-          if (an.tris.length < Math.max(3, lo - 6) || an.tris.length > hi || an.tris.length >= full) continue;
+          if (an.tris.length < Math.max(3, lo - 3) || an.tris.length > hi || an.tris.length >= full) continue;
           return { segs: F.segs, V: an.V, tris: an.tris, gap: F.gap };
         }
         const an = analyze(F.segs);
@@ -1222,22 +1277,43 @@ const Tri = (() => {
     }
     const F = fan(1, 0); const an = analyze(F.segs); return { segs: F.segs, V: an.V, tris: an.tris, gap: null };
   }
-  // 図が 回転しても 同じ形なら、ぐるっと まわる じゅんばんで 数える
-  function isSym(V, cen) {
-    for (const deg of [90, 120, 180]) {
-      const a = deg * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
-      const ok = V.every(p => { const x = p[0] - cen[0], y = p[1] - cen[1]; const q = [cen[0] + x * ca - y * sa, cen[1] + x * sa + y * ca]; return V.some(r => Math.hypot(r[0] - q[0], r[1] - q[1]) < 2e-3); });
-      if (ok) return true;
-    }
-    return false;
+  // 三角形の 中が、線で いくつの「へや」に 分かれているか
+  function distSeg(p, s) {
+    const d = sub(s[1], s[0]), L2 = dot(d, d); let t = L2 ? dot(sub(p, s[0]), d) / L2 : 0; t = Math.max(0, Math.min(1, t));
+    return Math.hypot(p[0] - s[0][0] - d[0] * t, p[1] - s[0][1] - d[1] * t);
   }
+  function rooms(segs, q) {
+    const N = 80;
+    const x0 = Math.min(q[0][0], q[1][0], q[2][0]), x1 = Math.max(q[0][0], q[1][0], q[2][0]);
+    const y0 = Math.min(q[0][1], q[1][1], q[2][1]), y1 = Math.max(q[0][1], q[1][1], q[2][1]);
+    const cw = (x1 - x0) / N, ch = (y1 - y0) / N, w = Math.max(cw, ch) * 1.1;
+    const open = new Uint8Array(N * N);
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+      const p = [x0 + (i + .5) * cw, y0 + (j + .5) * ch];
+      if (!pip(p, q)) continue;
+      if (segs.some(s => distSeg(p, s) < w)) continue;
+      open[j * N + i] = 1;
+    }
+    let n = 0; const seen = new Uint8Array(N * N);
+    for (let k = 0; k < N * N; k++) {
+      if (!open[k] || seen[k]) continue;
+      let size = 0; const st = [k]; seen[k] = 1;
+      while (st.length) {
+        const c = st.pop(); size++; const i = c % N, j = (c - i) / N;
+        for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= N || jj >= N) continue;
+          const kk = jj * N + ii; if (open[kk] && !seen[kk]) { seen[kk] = 1; st.push(kk); }
+        }
+      }
+      if (size >= 6) n++;
+    }
+    return Math.max(1, n);
+  }
+  // へやの 数ごとに、上から・左から の じゅんばん
   function orderTris(P) {
-    const cen = centroid(P.V); const sym = isSym(P.V, cen);
-    const items = P.tris.map(t => { const q = t.map(i => P.V[i]); return { t, a: Math.abs(polyArea(q)), c: centroid(q) }; }).sort((x, y) => x.a - y.a);
-    let grp = 0; items.forEach((o, i) => { if (i > 0 && o.a > items[i - 1].a * 1.25) grp++; o.g = grp; });
-    const ang = o => { const dx = o.c[0] - cen[0], dy = o.c[1] - cen[1]; if (Math.hypot(dx, dy) < .02) return -1; return ((Math.atan2(dy, dx) + Math.PI / 2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI); };
-    items.sort((x, y) => x.g - y.g || (sym ? ang(x) - ang(y) : (Math.abs(x.c[1] - y.c[1]) > .04 ? x.c[1] - y.c[1] : x.c[0] - y.c[0])));
-    return { items, sym };
+    const items = P.tris.map(t => { const q = t.map(i => P.V[i]); return { t, r: rooms(P.segs, q), c: centroid(q) }; });
+    items.sort((x, y) => x.r - y.r || (Math.abs(x.c[1] - y.c[1]) > .06 ? x.c[1] - y.c[1] : x.c[0] - y.c[0]));
+    return { items };
   }
   function drawLines(g, segs, w, color) { for (const s of segs) g.appendChild(S('line', { x1: s[0][0], y1: s[0][1], x2: s[1][0], y2: s[1][1], stroke: color, 'stroke-width': w, 'stroke-linecap': 'round' })); }
   function thumb(P, t, label, missed) {
@@ -1313,14 +1389,21 @@ const Tri = (() => {
     countAnswer(P.tris.length, 'こ', v => {
       active = false; sel = []; drawSel(); clr.disabled = true;
       const n = P.tris.length; const ok = v === n; answered(ok);
-      const { items, sym } = orderTris(P);
+      const { items } = orderTris(P);
       ex.innerHTML = '';
       const list = H('div', { class: 'tool' });
       list.innerHTML = '<p><b>' + R('ぜんぶの 三角形{さんかくけい}（' + n + 'こ）') + '</b></p>' +
         (found.length ? '<p>' + R('オレンジの 点線{てんせん}の わくは、まだ 見{み}つけていなかった 三角形{さんかくけい}だよ。') + '</p>' : '');
-      const tw = H('div', { class: 'thumbs' });
-      items.forEach((o, i) => tw.appendChild(thumb(P, o.t, String(i + 1), found.length > 0 && !found.includes(o.t.join(',')))));
-      list.appendChild(tw); ex.appendChild(list);
+      let tw = null, lastR = -1;
+      items.forEach((o, i) => {
+        if (o.r !== lastR) {
+          lastR = o.r;
+          list.appendChild(H('p', { class: 'grp-h' }, R(o.r === 1 ? 'へや 1つの 三角形{さんかくけい}' : 'へや ' + o.r + 'つを 合{あ}わせた 三角形{さんかくけい}')));
+          tw = H('div', { class: 'thumbs' }); list.appendChild(tw);
+        }
+        tw.appendChild(thumb(P, o.t, String(i + 1), found.length > 0 && !found.includes(o.t.join(','))));
+      });
+      ex.appendChild(list);
       const showGap = () => {
         gG.innerHTML = '';
         if (P.gap) {
@@ -1331,12 +1414,10 @@ const Tri = (() => {
       };
       const play = () => {
         label.hidden = false; showGap();
-        const steps = items.map((o, i) => ({ dur: .6, linear: true, start: () => { fillTri(o.t); label.textContent = (i + 1) + 'こめ'; } }));
+        const steps = items.map((o, i) => ({ dur: .6, linear: true, start: () => { fillTri(o.t); label.textContent = 'へや' + o.r + 'つ ・ ' + (i + 1) + 'こめ'; } }));
         runSeq(steps, () => { fillTri(null); label.textContent = 'ぜんぶで ' + n + 'こ'; });
       };
-      let body = sym
-        ? '同{おな}じ 大{おお}きさの 三角形{さんかくけい}を、ぐるっと まわる じゅんばんで 数{かぞ}えると、もれなく 数{かぞ}えられるよ。小{ちい}さい ものから 大{おお}きい ものへ 数{かぞ}えていくよ。'
-        : '小{ちい}さい 三角形{さんかくけい}から 大{おお}きい 三角形{さんかくけい}へ、同{おな}じ 大{おお}きさの ものは 上{うえ}から・左{ひだり}から じゅんばんに 数{かぞ}えると、もれなく 数{かぞ}えられるよ。';
+      let body = '線{せん}で 分{わ}けられた 1つ1つの ところを「へや」と よぶよ。へや 1つの 三角形{さんかくけい}、へや 2つを 合{あ}わせた 三角形{さんかくけい}…と、へやの 数{かず}ごとに、上{うえ}から・左{ひだり}から じゅんばんに 数{かぞ}えると、もれなく 数{かぞ}えられるよ。';
       if (P.gap) body += '<br>オレンジの 〇の ところは、線{せん}が とぎれているよ。ここには 線{せん}が ないので、気{き}をつけてね。';
       feedback({
         ok, head: ok ? '' : 'せいかいは ' + n + 'こ だよ。（こたえは ' + v + 'こ だったね）',
@@ -1377,14 +1458,14 @@ function buildSettings() {
   row('線{せん}・形{かたち}の 数{かず}', det('ovN', [['少{すく}ない', 2], ['ふつう', 3], ['多{おお}い', 4]]));
   row('右{みぎ}の 板{いた}の 動{うご}かし方{かた}', det('ovOp', [['そのまま', 'id'], ['うらがえす', 'flipX'], ['まわす', 'cw'], ['まぜる', 'mix']]));
   head('レベルで かわる ところ：おりがみ');
-  row('おり方{かた}', det('orFold', [['1回{かい}', '1'], ['2回{かい}', '2'], ['三角{さんかく}', 'tri'], ['3回{かい}', '3'], ['まぜる', 'mix']]));
+  row('おる 回数{かいすう}', det('orN', [['1回{かい}', '1'], ['2回{かい}', '2'], ['3回{かい}', '3'], ['まぜる', 'mix']]));
+  row('おり方{かた}（3回{かい}のときは 半分{はんぶん}・半分{はんぶん}・三角{さんかく}）', det('orShape', [['半分{はんぶん}', 'half'], ['三角{さんかく}', 'tri'], ['まぜる', 'mix']]));
   row('切{き}る 数{かず}', det('orCut', [['1つ', '1'], ['2つ', '2'], ['まぜる', 'mix']]));
   head('レベルで かわる ところ：かぞえる');
-  row('三角形{さんかくけい}の 数{かず}', det('triR', [['2〜4こ', 1], ['5〜10こ', 2], ['8〜13こ', 3], ['14こ〜', 4]]));
+  row('三角形{さんかくけい}の 数{かず}', det('triR', [['2〜4こ', 1], ['4〜9こ', 2], ['8〜12こ', 3], ['12こ いじょう', 4]]));
   row('線{せん}が とぎれた 図{ず}', det('triGap', [['なし', 'no'], ['あり', 'yes'], ['まぜる', 'mix']]));
 
   head('そのほか');
-  row('かさねるの 板{いた}', seg([[R('線{せん}'), 'line'], [R('図形{ずけい}'), 'shape'], ['りょうほう', 'both']], CFG.ovKind, v => { CFG.ovKind = v; saveCfg(); }));
   row('かぞえるの こたえかた', seg([['4つから えらぶ', 'choice'], [R('数字{すうじ}を 入{い}れる'), 'input']], CFG.cans, v => { CFG.cans = v; saveCfg(); }));
   row('問題{もんだい}の 数{かず}', stepper(CFG.count, 3, 20, v => { CFG.count = v; saveCfg(); sumText(); }).el);
   row('はじめの 説明{せつめい}', seg([['出{だ}す', true], ['出{だ}さない', false]].map(([l, v]) => [R(l), v]), CFG.intro, v => { CFG.intro = v; saveCfg(); }));
