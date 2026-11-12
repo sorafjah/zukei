@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>立方体とカード プリント</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<style id="pageCss">
+.page{width:210mm;height:297mm;padding:5mm 5mm 5mm 15mm;box-sizing:border-box;background:#fff;color:#000;font-family:'BIZ UDPGothic',sans-serif;font-size:12pt;line-height:var(--lh,2);overflow:hidden;position:relative}
+.page *{box-sizing:border-box}
+.sheet{height:100%;overflow:hidden;padding-right:0.6mm}
+.page rt{font-size:6pt;font-weight:400}
+.nm{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:var(--nm,7mm)}
+.nm .no{font-size:12pt}
+.nm .nr{display:flex;align-items:flex-end;gap:2mm}
+.nm .line{display:inline-block;width:70mm;height:9mm;border-bottom:0.3mm solid #000}
+.lead{margin:0 0 1mm}
+.cap{font-weight:700;margin-top:1.5mm;margin-bottom:0.5mm}
+.tw{display:flex;gap:7mm;align-items:flex-start}
+.tw .tc{flex:1;min-width:0}
+table.tb{border-collapse:collapse;width:100%;table-layout:fixed;line-height:1.55}
+.tb th,.tb td{border:0.3mm solid #000;padding:var(--cp,1.3mm) 1mm;text-align:center;font-weight:400;vertical-align:middle}
+.tb th{background:#e4e4e4}
+.tb th.rh{background:#fff;text-align:left;padding-left:2.5mm}
+.note{border:0.3mm solid #000;padding:0.5mm 3mm 1mm;margin-top:2.5mm}
+.note .nt{font-weight:700}
+.note .ni{padding-left:1em;text-indent:-1em}
+.q{margin-top:2mm;padding-bottom:var(--gap,10mm)}
+.qt{padding-left:3em;text-indent:-3em}
+.bl{white-space:nowrap}
+.opts{display:flex;flex-wrap:wrap;gap:0.8mm 9mm;padding-left:3em;margin-top:0.5mm}
+.opts.col{flex-direction:column}
+.figs{display:flex;flex-wrap:wrap;gap:2mm 14mm;align-items:flex-end;padding-left:3em;margin-top:1.5mm}
+.figs.top{margin-bottom:1mm}
+.fg{display:flex;flex-direction:column;align-items:center;line-height:1.5}
+.fg svg,.fo svg{display:block}
+.fg .fc{font-size:10.5pt;margin-top:0.5mm}
+.fo{display:flex;flex-direction:column;align-items:center;gap:1mm;line-height:1.5}
+.opts.fig{gap:2mm 14mm;align-items:flex-start;margin-top:1.5mm}
+.page svg text{font-family:'BIZ UDPGothic',sans-serif}
+.figs .sd{align-self:center;margin-left:6mm}
+.afig{text-indent:0;margin-top:1mm}
+.ansp h2{font-size:14pt;margin:2mm 0 3mm}
+.ansp .al{margin-top:4mm;padding-left:3em;text-indent:-3em}
+.ansp .al b{font-weight:700}
+.ansp .why{display:block;text-indent:0}
+@media print{
+  @page{size:A4;margin:5mm 5mm 5mm 15mm}
+  html,body{margin:0;padding:0;background:#fff}
+  .page{width:auto;height:286mm;padding:0;margin:0;box-shadow:none;break-after:page;page-break-after:always}
+  .page:last-child{break-after:auto;page-break-after:auto}
+  .noprint{display:none!important}
+}
+</style>
+<style>
+html,body{height:100%;margin:0}
+body{font-family:'BIZ UDPGothic',sans-serif;background:#eef4f7;color:#223;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-text-size-adjust:100%;display:flex;flex-direction:column}
+rt{font-size:.5em}
+header{background:#fff;border-bottom:2px solid #9cc7d8;padding:4px 10px 5px;flex:none}
+.top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+h1{font-size:17px;margin:0 auto 0 0;line-height:1.7}
+button{font-family:inherit;font-size:14px;min-height:36px;min-width:36px;padding:0 11px;border-radius:7px;border:2px solid #4a90a8;background:#fff;color:#1d4f60;line-height:1.7;cursor:pointer;touch-action:manipulation}
+button.main{background:#2f7f99;color:#fff;border-color:#2f7f99}
+button.on{background:#d5edf5;border-color:#2f7f99;font-weight:700}
+#panel{margin-top:4px;display:grid;gap:3px}
+#panel.hide{display:none}
+.row{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.row>.lb{font-weight:700;font-size:13px;line-height:1.7;margin-right:1px}
+.row>.lb:not(:first-child){margin-left:8px}
+.stp{display:flex;align-items:center;gap:3px}
+.stp input{width:46px;height:36px;box-sizing:border-box;font-size:17px;text-align:center;border:2px solid #4a90a8;border-radius:7px;font-family:inherit;padding:0;-webkit-user-select:text;user-select:text}
+.sub{font-size:12px;color:#456;line-height:1.7}
+#msg{font-size:13px;color:#1d4f60;line-height:1.7;font-weight:700}
+#msg:empty{display:none}
+#pv{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:8px 8px 40px}
+#scaler{transform-origin:0 0}
+#pages .page{margin:0 0 6mm;box-shadow:0 1px 6px rgba(0,0,0,.25)}
+#pages [contenteditable]{-webkit-user-select:text;user-select:text;outline:none}
+#pages [contenteditable]:focus{background:#fff6c9}
+.warn{position:absolute;left:15mm;right:5mm;bottom:2mm;background:#fff;border:0.6mm solid #b35b00;color:#7a3e00;padding:1mm 2mm;font-size:11pt;line-height:1.9}
+#help{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(30,50,60,.45);z-index:10;display:flex;align-items:center;justify-content:center;padding:10px}
+#help[hidden]{display:none}
+.hbox{background:#fff;border:2px solid #4a90a8;border-radius:10px;max-width:760px;width:100%;max-height:100%;display:flex;flex-direction:column}
+.hbar{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:2px solid #9cc7d8;flex:none}
+.hbar .ht{font-size:17px;font-weight:700;line-height:1.7}
+#helpBody{overflow:auto;-webkit-overflow-scrolling:touch;padding:4px 14px 14px;font-size:14px;line-height:1.9;-webkit-user-select:text;user-select:text}
+#helpBody h3{font-size:15px;margin:12px 0 3px;color:#1d4f60;border-left:5px solid #4a90a8;padding-left:7px}
+#helpBody table{border-collapse:collapse;width:100%}
+#helpBody th,#helpBody td{border:1px solid #9cc7d8;padding:2px 7px;text-align:left;vertical-align:top}
+#helpBody th{background:#e6f2f7;white-space:nowrap;font-weight:700}
+#helpBody p{margin:3px 0}
+@media print{
+  #help{display:none!important}
+  html,body{height:auto!important;overflow:visible!important;background:#fff}
+  body{display:block}
+  header{display:none!important}
+  #pv{overflow:visible;padding:0;flex:none}
+  #pvh{height:auto!important}
+  #scaler{transform:none!important;width:auto!important;margin:0!important}
+  #pages .page{margin:0;box-shadow:none;width:auto;height:286mm;padding:0}
+  #pages [contenteditable]:focus{background:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1 data-r="{立方体|りっぽうたい}とカード プリント"></h1>
+    <button id="bSet" data-r="{設定|せってい}"></button>
+    <button id="bHelp" data-r="{説明|せつめい}"></button>
+    <button id="bNew" class="main" data-r="{新|あたら}しい{問題|もんだい}"></button>
+    <button id="bPrint" class="main" data-r="{印刷|いんさつ}する"></button>
+    <button id="bCopy" data-r="HTMLをコピー"></button>
+  </div>
+  <div id="panel">
+    <div class="row"><span class="lb">ジャンル</span><span id="gGenre" class="row"></span></div>
+    <div class="row">
+      <span class="lb">レベル</span><span class="stp" id="sLevel"></span>
+      <span class="lb" data-r="まい{数|すう}"></span><span class="stp" id="sCount"></span>
+      <span class="lb" data-r="{答|こた}え"></span><span id="gAns" class="row"></span>
+    </div>
+    <div class="sub" data-r="レベル 1：やさしい　2：ふつう　3：むずかしい　／　プリントの{文字|もじ}はタップして{直|なお}せます（{図|ず}と{答|こた}えは{変|か}わりません）"></div>
+  </div>
+  <div id="msg"></div>
+</header>
+<div id="help" class="noprint" hidden><div class="hbox"><div class="hbar"><span class="ht" data-r="このアプリの{説明|せつめい}"></span><button id="bHelpClose" data-r="{閉|と}じる"></button></div><div id="helpBody"></div></div></div>
+<div id="pv"><div id="pvh"><div id="scaler"><div id="pages"></div></div></div></div>
+
+<script>
+/*GEN-START*/
+// ===== 問題を作る部分（画面や印刷とは分けてあるので、ほかのアプリにそのまま写せる） =====
+var rnd=Math.random;
+function ri(a,b){return a+Math.floor(rnd()*(b-a+1));}
+function pick(a){return a[ri(0,a.length-1)];}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=ri(0,i);var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function bl(pre,post,n){return pre+'（'+'　'.repeat(Math.round((n||4)*1.75))+'）'+post;}
+var SEL='1つ{選|えら}び、（　）に○を{書|か}いてください。';
+var TAIL='（1）〜（3）の{問題|もんだい}に{答|こた}えてください。';
+var RT='{立方体|りっぽうたい}',TK='{展開図|てんかいず}',MEN='{面|めん}',SR='{印|しるし}',MK='{向|む}かい{合|あ}う';
+var SYMS=['●','○','◎','■','□','×'];
+var POS=['U','D','N','S','E','W'],OPP={U:'D',D:'U',N:'S',S:'N',E:'W',W:'E'};
+function nth(k){return '{左|ひだり}から'+(k+1)+'{番目|ばんめ}';}
+
+// ---- 図（SVG。長さの単位はmm） ----
+function svg(w,h,body){w=Math.round(w*100)/100;h=Math.round(h*100)/100;
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'mm" height="'+h+'mm" viewBox="0 0 '+w+' '+h+'">'+body+'</svg>';}
+function f2(v){return Math.round(v*100)/100;}
+// 印。1×1のマスの中にかき、matrix で面の形に合わせる（どの印も、90度回しても同じ形）
+function symU(s){
+  if(s==='●')return '<circle cx=".5" cy=".5" r=".27"/>';
+  if(s==='○')return '<circle cx=".5" cy=".5" r=".25" fill="none" stroke="#000" stroke-width=".07"/>';
+  if(s==='◎')return '<circle cx=".5" cy=".5" r=".28" fill="none" stroke="#000" stroke-width=".06"/><circle cx=".5" cy=".5" r=".13" fill="none" stroke="#000" stroke-width=".06"/>';
+  if(s==='■')return '<rect x=".26" y=".26" width=".48" height=".48"/>';
+  if(s==='□')return '<rect x=".27" y=".27" width=".46" height=".46" fill="none" stroke="#000" stroke-width=".07"/>';
+  if(s==='×')return '<path d="M.27 .27L.73 .73M.73 .27L.27 .73" stroke="#000" stroke-width=".09" fill="none"/>';
+  return '';
+}
+function symAt(s,m){return s?'<g transform="matrix('+m.map(f2).join(' ')+')">'+symU(s)+'</g>':'';}
+// 立方体の見取図（上・手前・右の3つの面が見える）
+function cubeSVG(t,s){
+  var d=s*0.5,p=0.4,W=s+d+2*p,H=s+d+2*p,L='stroke="#000" stroke-width=".4" stroke-linejoin="round" fill="#fff"';
+  var b='<g transform="translate('+p+' '+p+')">'
+    +'<path d="M0 '+f2(d)+'L'+f2(d)+' 0L'+f2(s+d)+' 0L'+s+' '+f2(d)+'Z" '+L+'/>'
+    +'<path d="M'+s+' '+f2(d)+'L'+f2(s+d)+' 0L'+f2(s+d)+' '+s+'L'+s+' '+f2(s+d)+'Z" '+L+'/>'
+    +'<rect x="0" y="'+f2(d)+'" width="'+s+'" height="'+s+'" '+L+'/>'
+    +symAt(t[0],[s,0,-d,d,d,0])+symAt(t[1],[s,0,0,s,0,d])+symAt(t[2],[d,-d,0,s,s,d])+'</g>';
+  return svg(W,H,b);
+}
+// 展開図（cells:[[x,y],…]、symOf:マスごとの印。なければ白い面）
+function netSVG(cells,u,symOf){
+  var W=0,H=0,p=0.4,b='';cells.forEach(function(c){W=Math.max(W,c[0]+1);H=Math.max(H,c[1]+1);});
+  cells.forEach(function(c,i){var x=p+c[0]*u,y=p+c[1]*u;
+    b+='<rect x="'+f2(x)+'" y="'+f2(y)+'" width="'+u+'" height="'+u+'" fill="#fff" stroke="#000" stroke-width=".4"/>';
+    if(symOf)b+=symAt(symOf[i],[u,0,0,u,x,y]);});
+  return svg(W*u+2*p,H*u+2*p,b);
+}
+
+// ---- 立方体のしくみ ----
+// 6マスの形をすべて作り、立方体になるもの（NETS・11種類）と、ならないもの（NON）に分ける
+function normC(cs){var mx=1e9,my=1e9;cs.forEach(function(c){mx=Math.min(mx,c[0]);my=Math.min(my,c[1]);});
+  return cs.map(function(c){return [c[0]-mx,c[1]-my];}).sort(function(a,b){return a[1]-b[1]||a[0]-b[0];});}
+function keyC(cs){return cs.map(function(c){return c[0]+','+c[1];}).join(';');}
+function variants(cs){var out=[],seen={};
+  for(var f=0;f<2;f++)for(var r=0;r<4;r++){
+    var v=normC(cs.map(function(c){var x=f?-c[0]:c[0],y=c[1],t;for(var i=0;i<r;i++){t=x;x=-y;y=t;}return [x,y];}));
+    var k=keyC(v);if(!seen[k]){seen[k]=1;out.push(v);}}
+  return out;}
+var D4=[[1,0],[-1,0],[0,1],[0,-1]];
+// 展開図を組み立てる：base の面を上（U）にして、ほかの面を下へ折る。画面の上が奥（N）、右がE
+function fold(cells,base){
+  var idx={},res=[],q=[[base,{h:'U',e:'E',w:'W',n:'N',s:'S',o:'D'}]];cells.forEach(function(c,i){idx[c[0]+','+c[1]]=i;});
+  res[base]='U';
+  while(q.length){var cur=q.shift(),c=cells[cur[0]],F=cur[1];
+    [[1,0,{h:F.e,e:F.o,w:F.h,o:F.w,n:F.n,s:F.s}],[-1,0,{h:F.w,w:F.o,e:F.h,o:F.e,n:F.n,s:F.s}],
+     [0,-1,{h:F.n,n:F.o,s:F.h,o:F.s,e:F.e,w:F.w}],[0,1,{h:F.s,s:F.o,n:F.h,o:F.n,e:F.e,w:F.w}]].forEach(function(m){
+      var j=idx[(c[0]+m[0])+','+(c[1]+m[1])];if(j===undefined||res[j])return;res[j]=m[2].h;q.push([j,m[2]]);});}
+  return res;}
+function isNet(cells){var r=fold(cells,0),o={};return r.every(function(p){if(o[p])return false;o[p]=1;return true;});}
+var NETS=[],NON=[];
+(function(){
+  var cur=[[[0,0]]];
+  for(var n=2;n<=6;n++){var nx=[],seen={};
+    cur.forEach(function(cs){var has={};cs.forEach(function(c){has[c[0]+','+c[1]]=1;});
+      cs.forEach(function(c){D4.forEach(function(d){var x=c[0]+d[0],y=c[1]+d[1];if(has[x+','+y])return;
+        var v=normC(cs.concat([[x,y]])),k=variants(v).map(keyC).sort()[0];if(!seen[k]){seen[k]=1;nx.push(v);}});});});
+    cur=nx;}
+  cur.forEach(function(cs){(isNet(cs)?NETS:NON).push(cs);});
+})();
+function bbox(cs){var W=0,H=0;cs.forEach(function(c){W=Math.max(W,c[0]+1);H=Math.max(H,c[1]+1);});return [W,H];}
+// 横長の向きで、回したりうら返したりしたものを1つ選ぶ
+function orient(cs){return pick(variants(cs).filter(function(v){var b=bbox(v);return b[0]>=b[1];}));}
+function is141(cs){var b=bbox(cs).sort();if(b[0]!==3||b[1]!==4)return false;
+  return variants(cs).some(function(v){return bbox(v)[0]===4&&v.filter(function(c){return c[1]===1;}).length===4;});}
+// 立方体の向き24通り（位置→位置）
+var ROTS=(function(){
+  var yaw={U:'U',D:'D',N:'E',E:'S',S:'W',W:'N'},pit={U:'N',N:'D',D:'S',S:'U',E:'E',W:'W'},id={},out=[],seen={},q;
+  POS.forEach(function(p){id[p]=p;});q=[id];
+  while(q.length){var r=q.shift(),k=POS.map(function(p){return r[p];}).join('');if(seen[k])continue;seen[k]=1;out.push(r);
+    [yaw,pit].forEach(function(g){var n={};POS.forEach(function(p){n[p]=g[r[p]];});q.push(n);});}
+  return out;})();
+function randCube(){var s=shuffle(SYMS),o={};POS.forEach(function(p,i){o[p]=s[i];});return o;}
+function oppSym(st,s){var r='';POS.forEach(function(p){if(st[p]===s)r=st[OPP[p]];});return r;}
+function pairsText(st){return [['U','D'],['S','N'],['E','W']].map(function(p){return st[p[0]]+'と'+st[p[1]];}).join('、');}
+// 見える3つの面（上・手前・右）
+function view(st,r){return [st[r.U],st[r.S],st[r.E]];}
+// たおして転がす（E:右、W:左、N:奥、S:手前）
+function roll(st,d){
+  var m={E:['E','U','W','D'],W:['W','U','E','D'],N:['N','U','S','D'],S:['S','U','N','D']}[d],n={};
+  POS.forEach(function(p){n[p]=st[p];});
+  n.D=st[m[0]];n[m[0]]=st[m[1]];n.U=st[m[2]];n[m[2]]=st[m[3]];return n;}
+// 印つきの展開図を作る
+function symNet(st,only141){
+  var cs=orient(pick(NETS.filter(function(n){return !only141||is141(n);}))),pos=fold(cs,ri(0,5));
+  return {cells:cs,pos:pos,syms:pos.map(function(p){return st[p];})};}
+
+// ---- ジャンル1：展開図 ----
+function genTenkai(L){
+  var st=randCube(),net=symNet(st,L===1),qs=[],ans=[],i,k;
+  // (1) 向かい合う面
+  var tg=pick(SYMS),op=oppSym(st,tg);
+  qs.push({t:'{上|うえ}の'+TK+'を{組|く}み{立|た}てたとき、'+tg+'の'+MEN+'と'+MK+MEN+'の'+SR+'を{書|か}いてください。',a:bl('','',3)});
+  ans.push({a:op,w:MK+MEN+'の'+SR+'は、'+pairsText(st)+'です。'});
+  // (2) 立方体になる展開図
+  var good=orient(pick(NETS.filter(function(n){return L>1||is141(n);}))),bads=shuffle(NON.filter(function(n){var b=bbox(n);return Math.max(b[0],b[1])<=4;})).slice(0,2).map(orient);
+  var list=shuffle([{c:good,ok:1},{c:bads[0]},{c:bads[1]}]);k=0;list.forEach(function(x,j){if(x.ok)k=j;});
+  qs.push({t:'{組|く}み{立|た}てると'+RT+'になる'+TK+'を、{次|つぎ}の3つから'+SEL,figs:list.map(function(x){return netSVG(x.c,8);})});
+  ans.push({a:nth(k),w:'ほかの2つは、{組|く}み{立|た}てると'+MEN+'が{重|かさ}なって、'+RT+'になりません。'});
+  // (3) 組み立てた立方体を選ぶ
+  var ok=view(st,pick(ROTS)),ws=[],why=[],guard=0;
+  function wOpp(){var v=view(st,pick(ROTS)),a=ri(0,2),b=(a+ri(1,2))%3;v[a]=oppSym(st,v[b]);return {v:v,w:v[a]+'と'+v[b]+'は'+MK+MEN+'なので、となりにはなりません。'};}
+  function wMir(){var v=view(st,pick(ROTS));return {v:[v[0],v[2],v[1]],w:MEN+'のならび{方|かた}が、{反対|はんたい}{回|まわ}りです。'};}
+  while(ws.length<2&&guard++<50){var w=(L===3&&ws.length===0)?wMir():wOpp(),key=w.v.join('');
+    if(key===ok.join('')||ws.some(function(x){return x.v.join('')===key;}))continue;ws.push(w);}
+  if(ws.length<2)return null;
+  list=shuffle([{v:ok,ok:1},ws[0],ws[1]]);list.forEach(function(x,j){if(x.ok)k=j;else why.push(nth(j)+'：'+x.w);});
+  qs.push({t:'{上|うえ}の'+TK+'を{組|く}み{立|た}てると、どの'+RT+'になりますか。{次|つぎ}の3つから'+SEL,figs:list.map(function(x){return cubeSVG(x.v,15);})});
+  ans.push({a:nth(k),w:why.join('<br>')});
+  return {genre:TK,lead:'{下|した}の{図|ず}は、'+RT+'の'+TK+'です。6つの'+MEN+'に、'+SR+'がかいてあります。'+TAIL,
+    figs:[{svg:netSVG(net.cells,12,net.syms)}],qs:qs,ans:ans};
+}
+
+// ---- ジャンル2：立方体を転がす ----
+var DIRV={E:[1,0],W:[-1,0],N:[0,-1],S:[0,1]};
+function makePath(C,Rw,n,tmin,tmax){
+  for(var t=0;t<400;t++){
+    var x=ri(0,C-1),y=ri(0,Rw-1),seen={},ds=[],turns=0,okp=true;seen[x+','+y]=1;var sx=x,sy=y;
+    for(var i=0;i<n;i++){
+      var c=shuffle(['E','W','N','S']).filter(function(d){var nx=x+DIRV[d][0],ny=y+DIRV[d][1];return nx>=0&&ny>=0&&nx<C&&ny<Rw&&!seen[nx+','+ny];});
+      if(!c.length){okp=false;break;}
+      var d=(i>0&&c.indexOf(ds[i-1])>=0&&rnd()<0.45)?ds[i-1]:c[0];
+      if(i>0&&d!==ds[i-1])turns++;ds.push(d);x+=DIRV[d][0];y+=DIRV[d][1];seen[x+','+y]=1;}
+    if(okp&&turns>=tmin&&turns<=tmax)return {C:C,R:Rw,sx:sx,sy:sy,ds:ds};}
+  return null;}
+// マスの図（上から見た図）。灰色がスタート、太いわくがゴール
+function gridSVG(p,top,u){
+  var px=0.6,py=4.2,W=p.C*u+2*px,H=p.R*u+2*py,b='',x=p.sx,y=p.sy,i,j;
+  b+='<text x="'+f2(W/2)+'" y="3.1" font-size="2.9" text-anchor="middle">おく</text><text x="'+f2(W/2)+'" y="'+f2(H-0.9)+'" font-size="2.9" text-anchor="middle">てまえ</text>';
+  for(j=0;j<p.R;j++)for(i=0;i<p.C;i++)b+='<rect x="'+f2(px+i*u)+'" y="'+f2(py+j*u)+'" width="'+u+'" height="'+u+'" fill="'+(i===x&&j===y?'#d4d4d4':'#fff')+'" stroke="#000" stroke-width=".25"/>';
+  b+=symAt(top,[u,0,0,u,px+x*u,py+y*u]);
+  p.ds.forEach(function(d){var v=DIRV[d],cx=px+(x+.5)*u,cy=py+(y+.5)*u,a=0.33*u,e=0.84*u,h=2.1;
+    var x1=cx+v[0]*a,y1=cy+v[1]*a,x2=cx+v[0]*e,y2=cy+v[1]*e,nx=-v[1],ny=v[0];
+    b+='<path d="M'+f2(x1)+' '+f2(y1)+'L'+f2(x2-v[0]*h*0.6)+' '+f2(y2-v[1]*h*0.6)+'" stroke="#000" stroke-width=".55" fill="none"/>'
+      +'<path d="M'+f2(x2)+' '+f2(y2)+'L'+f2(x2-v[0]*h+nx*h*0.6)+' '+f2(y2-v[1]*h+ny*h*0.6)+'L'+f2(x2-v[0]*h-nx*h*0.6)+' '+f2(y2-v[1]*h-ny*h*0.6)+'Z"/>';
+    x+=v[0];y+=v[1];});
+  b+='<rect x="'+f2(px+x*u)+'" y="'+f2(py+y*u)+'" width="'+u+'" height="'+u+'" fill="none" stroke="#000" stroke-width=".9"/>';
+  return svg(W,H,b);
+}
+function genKorogasu(L){
+  var st=randCube(),v=view(st,{U:'U',S:'S',E:'E'}),qs=[],ans=[],C=L===1?4:L===2?5:6,Rw=3,KAI='{回|かい}';
+  var plan=L===1?[[1,0,0],[2,0,0],[3,1,1]]:L===2?[[2,0,0],[3,1,2],[5,2,4]]:[[3,1,2],[5,2,4],[ri(6,7),3,6]];
+  var UE='{上|うえ}',notes=['{図|ず}1は、スタートのときの'+RT+'です。'+UE+'の'+MEN+'が'+v[0]+'、{手前|てまえ}の'+MEN+'が'+v[1]+'、{右|みぎ}の'+MEN+'が'+v[2]+'です。'];
+  var figs=[{svg:cubeSVG(v,14),cap:'{図|ず}1'}];
+  if(L===3){var net=symNet(st,false);figs.push({svg:netSVG(net.cells,8,net.syms),cap:'{図|ず}2'});notes.push('{図|ず}2は、この'+RT+'の'+TK+'です。');}
+  else notes.push(MK+MEN+'の'+SR+'は、'+pairsText(st)+'です。');
+  notes.push('マスの{図|ず}は、'+UE+'から{見|み}た{図|ず}です。{図|ず}の{下|した}がわが{手前|てまえ}です。');
+  notes.push('{灰色|はいいろ}のマスがスタート、{太|ふと}いわくのマスがゴールです。{灰色|はいいろ}のマスの'+SR+'は、'+UE+'の'+MEN+'の'+SR+'です。');
+  for(var i=0;i<3;i++){
+    var p=makePath(C,Rw,plan[i][0],plan[i][1],plan[i][2]);if(!p)return null;
+    var s=st,tops=[st.U];p.ds.forEach(function(d){s=roll(s,d);tops.push(s.U);});
+    var bottom=L===3&&i===2,n=p.ds.length;
+    qs.push({t:RT+'を、{矢印|やじるし}のとおりに'+n+KAI+'{転|ころ}がします。ゴールで、'+(bottom?'{下|した}になる'+MEN+'（マスについている'+MEN+'）':UE+'になる'+MEN)+'の'+SR+'を{書|か}いてください。',side:bl('','',3),row:[{svg:gridSVG(p,st.U,9.5)}]});
+    ans.push({a:bottom?s.D:s.U,w:UE+'の'+MEN+'は、'+tops.join('→')+' のじゅんに{変|か}わります。'+(bottom?'{下|した}の'+MEN+'は、'+s.U+'と'+MK+s.D+'です。':'')});
+  }
+  return {genre:RT+'を{転|ころ}がす',lead:'マスの{上|うえ}に'+RT+'をおいて、すべらないように、{矢印|やじるし}の{向|む}きに1マスずつたおして{転|ころ}がします。{次|つぎ}の【きまり】を{読|よ}んで、'+TAIL,
+    figs:figs,notes:notes,qs:qs,ans:ans};
+}
+
+// ---- ジャンル3：カードのまい数 ----
+var TRI={bl:['W','S'],br:['E','S'],tl:['W','N'],tr:['E','N']};
+var SIDE={E:[1,0,'W'],W:[-1,0,'E'],N:[0,-1,'S'],S:[0,1,'N']};
+// カードをならべて形を作る。kind：sq（正方形）dom（長方形）ell（L字）tri（三角形）
+function makeShape(kind,n,h,MW,MH){
+  var occ={},pieces=[],tri={},cnt=0,tries=0;
+  function fits(cs){var a=Object.keys(occ).map(function(k){return k.split(',').map(Number);}).concat(Object.keys(tri).map(function(k){return k.split(',').map(Number);})).concat(cs),b=bbox(normC(a));return b[0]<=MW&&b[1]<=MH;}
+  function empty(c){var k=c[0]+','+c[1];return !occ[k]&&!tri[k];}
+  function add(cs){cs.forEach(function(c){occ[c[0]+','+c[1]]=pieces.length+1;});pieces.push(cs);}
+  var per=kind==='dom'?2:kind==='ell'?3:1;
+  add(per===1?[[0,0]]:per===2?[[0,0],pick([[1,0],[0,1]])]:shuffle([[0,0],[1,0],[0,1],[1,1]]).slice(0,3));
+  while(pieces.length<n&&tries++<600){
+    var base=pick(pick(pieces)),d=pick(D4),a=[base[0]+d[0],base[1]+d[1]],cs;
+    if(per===1)cs=[a];
+    else if(per===2){var d2=pick(D4);cs=[a,[a[0]+d2[0],a[1]+d2[1]]];}
+    else{var ox=a[0]-ri(0,1),oy=a[1]-ri(0,1),four=[[ox,oy],[ox+1,oy],[ox,oy+1],[ox+1,oy+1]],rest=four.filter(function(c){return c[0]!==a[0]||c[1]!==a[1];});
+      cs=[a].concat(shuffle(rest).slice(0,2));
+      if(cs[1][0]!==a[0]&&cs[1][1]!==a[1]&&cs[2][0]!==a[0]&&cs[2][1]!==a[1])continue;
+      if(cs[1][0]!==cs[2][0]&&cs[1][1]!==cs[2][1]&&!((cs[1][0]===a[0]||cs[1][1]===a[1])&&(cs[2][0]===a[0]||cs[2][1]===a[1])))continue;}
+    if(!cs.every(empty)||!fits(cs))continue;add(cs);}
+  if(pieces.length<n)return null;
+  tries=0;
+  while(cnt<h&&tries++<300){
+    var b2=pick(pick(pieces)),sd=pick(['E','W','N','S']),v=SIDE[sd],c=[b2[0]+v[0],b2[1]+v[1]];
+    if(!empty(c)||!fits([c]))continue;
+    tri[c[0]+','+c[1]]=pick(Object.keys(TRI).filter(function(t){return TRI[t].indexOf(v[2])>=0;}));cnt++;}
+  if(cnt<h)return null;
+  // 左上をそろえる
+  var all=Object.keys(occ).concat(Object.keys(tri)).map(function(k){return k.split(',').map(Number);}),mx=1e9,my=1e9,W=0,H=0;
+  all.forEach(function(c){mx=Math.min(mx,c[0]);my=Math.min(my,c[1]);});
+  var o2={},t2={};Object.keys(occ).forEach(function(k){var c=k.split(',');o2[(c[0]-mx)+','+(c[1]-my)]=occ[k];});
+  Object.keys(tri).forEach(function(k){var c=k.split(',');t2[(c[0]-mx)+','+(c[1]-my)]=tri[k];});
+  all.forEach(function(c){W=Math.max(W,c[0]-mx+1);H=Math.max(H,c[1]-my+1);});
+  // あな（まわりをかこまれたすきま）がある形は使わない
+  var seen={},q=[[-1,-1]];seen['-1,-1']=1;
+  while(q.length){var cu=q.pop();D4.forEach(function(dd){var x=cu[0]+dd[0],y=cu[1]+dd[1],k=x+','+y;if(x<-1||y<-1||x>W||y>H||seen[k]||o2[k]||t2[k])return;seen[k]=1;q.push([x,y]);});}
+  for(var y=0;y<H;y++)for(var x=0;x<W;x++){var k=x+','+y;if(!o2[k]&&!t2[k]&&!seen[k])return null;}
+  return {W:W,H:H,occ:o2,tri:t2,kind:kind,count:kind==='tri'?2*n+h:n};
+}
+// 形の図。mode：grid（マスの線）dots（点だけ）div（カードの分け方＝答え）
+function shapeSVG(s,u,mode,dash){
+  var p=0.7,b='',x,y,k,G='#e2e2e2';
+  function X(v){return f2(p+v*u);}
+  function cov(x,y,sd){var k=x+','+y;return s.occ[k]?true:s.tri[k]?TRI[s.tri[k]].indexOf(sd)>=0:false;}
+  function pid(x,y){return s.occ[x+','+y]||0;}
+  for(k in s.occ){var c=k.split(',').map(Number);b+='<rect x="'+X(c[0])+'" y="'+X(c[1])+'" width="'+u+'" height="'+u+'" fill="'+G+'"/>';}
+  var hyp='';
+  for(k in s.tri){c=k.split(',').map(Number);var t=s.tri[k],P={tl:[c[0],c[1]],tr:[c[0]+1,c[1]],bl:[c[0],c[1]+1],br:[c[0]+1,c[1]+1]},om={bl:'tr',tr:'bl',br:'tl',tl:'br'}[t];
+    var pts=Object.keys(P).filter(function(q){return q!==om;}).map(function(q){return X(P[q][0])+','+X(P[q][1]);}).join(' ');
+    b+='<polygon points="'+pts+'" fill="'+G+'"/>';
+    var e=(t==='bl'||t==='tr')?[P.tl,P.br]:[P.bl,P.tr];hyp+='M'+X(e[0][0])+' '+X(e[0][1])+'L'+X(e[1][0])+' '+X(e[1][1]);}
+  if(dash)b+='<rect x="'+X(0)+'" y="'+X(0)+'" width="'+u+'" height="'+u+'" fill="none" stroke="#555" stroke-width=".2" stroke-dasharray=".8 .8"/>';
+  var thin='',thick='',dv='';
+  function edge(a,bb,same,d){if(a&&bb){if(mode==='grid')thin+=d;else if(mode==='div'&&!same)dv+=d;}else if(a||bb)thick+=d;}
+  for(y=0;y<s.H;y++)for(x=0;x<=s.W;x++)edge(cov(x-1,y,'E'),cov(x,y,'W'),s.kind!=='tri'&&pid(x-1,y)===pid(x,y)&&s.kind!=='sq','M'+X(x)+' '+X(y)+'L'+X(x)+' '+X(y+1));
+  for(y=0;y<=s.H;y++)for(x=0;x<s.W;x++)edge(cov(x,y-1,'S'),cov(x,y,'N'),s.kind!=='tri'&&pid(x,y-1)===pid(x,y)&&s.kind!=='sq','M'+X(x)+' '+X(y)+'L'+X(x+1)+' '+X(y));
+  if(mode==='div'&&s.kind==='tri')for(k in s.occ){c=k.split(',').map(Number);dv+='M'+X(c[0])+' '+X(c[1])+'L'+X(c[0]+1)+' '+X(c[1]+1);}
+  if(thin)b+='<path d="'+thin+'" stroke="#555" stroke-width=".2" fill="none"/>';
+  if(dv)b+='<path d="'+dv+'" stroke="#000" stroke-width=".3" fill="none"/>';
+  b+='<path d="'+thick+hyp+'" stroke="#000" stroke-width=".55" stroke-linecap="round" fill="none"/>';
+  if(mode==='dots')for(y=0;y<=s.H;y++)for(x=0;x<=s.W;x++)b+='<circle cx="'+X(x)+'" cy="'+X(y)+'" r=".32" fill="#444"/>';
+  return svg(s.W*u+2*p,s.H*u+2*p,b);
+}
+var CARD={
+  sq:{name:'{正方形|せいほうけい}',s:{W:1,H:1,occ:{'0,0':1},tri:{},kind:'sq'}},
+  dom:{name:'{長方形|ちょうほうけい}',s:{W:2,H:1,occ:{'0,0':1,'1,0':1},tri:{},kind:'sq'}},
+  ell:{name:'L{字|じ}の{形|かたち}',s:{W:2,H:2,occ:{'0,0':1,'0,1':1,'1,1':1},tri:{},kind:'sq'}},
+  tri:{name:'{三角形|さんかくけい}',s:{W:1,H:1,occ:{},tri:{'0,0':'bl'},kind:'tri'}}};
+function genCard(L){
+  var plan=L===1?[['sq',ri(6,9),0],['dom',ri(3,5),0],['tri',ri(3,4),ri(1,2)]]
+          :L===2?[['dom',ri(5,7),0],['tri',ri(5,7),ri(2,4)],['ell',ri(3,4),0]]
+                :[['dom',ri(6,9),0],['tri',ri(6,8),ri(3,5)],['ell',ri(4,6),0]];
+  var mode=L===3?'dots':'grid',u=8,qs=[],ans=[],MAI='まい';
+  for(var i=0;i<3;i++){
+    var pl=plan[i],s=null,g=0;while(!s&&g++<60)s=makeShape(pl[0],pl[1],pl[2],7,4);if(!s)return null;
+    var cd=CARD[pl[0]],w;
+    if(pl[0]==='sq')w='マスを1つずつ{数|かぞ}えます。';
+    else if(pl[0]==='dom')w='マスは'+2*s.count+'こ{分|ぶん}あります。カード1'+MAI+'はマス2こ{分|ぶん}なので、'+2*s.count+'÷2＝'+s.count;
+    else if(pl[0]==='ell')w='マスは'+3*s.count+'こ{分|ぶん}あります。カード1'+MAI+'はマス3こ{分|ぶん}なので、'+3*s.count+'÷3＝'+s.count;
+    else w='マス1こに、カードが2'+MAI+'{入|はい}ります。マスが'+pl[1]+'こで'+2*pl[1]+MAI+'、マスの{半分|はんぶん}の{所|ところ}が'+pl[2]+'こで'+pl[2]+MAI+'。'+2*pl[1]+'＋'+pl[2]+'＝'+s.count;
+    qs.push({t:'{左|ひだり}の'+cd.name+'のカードをならべて、{右|みぎ}の{形|かたち}を{作|つく}ります。カードは、{何|なん}'+MAI+'いりますか。',side:bl('',MAI,3),
+      row:[{svg:shapeSVG(cd.s,u,mode,pl[0]==='tri'&&mode==='grid'),cap:'カード'},{svg:shapeSVG(s,u,mode),cap:'{作|つく}る{形|かたち}'}]});
+    ans.push({a:s.count+MAI,w:w,fig:shapeSVG(s,5,'div')});
+  }
+  return {genre:'カードのまい{数|すう}',lead:'{同|おな}じ{形|かたち}のカードを、すきまがないように、{重|かさ}ならないようにならべて、いろいろな{形|かたち}を{作|つく}ります。カードは、{回|まわ}したり、うら{返|がえ}したりしてもよいです。'
+      +(L===3?'{図|ず}の{点|てん}は、たても{横|よこ}も{同|おな}じはばでならんでいます。':'{図|ず}の{中|なか}の{細|ほそ}い{線|せん}は、{同|おな}じ{大|おお}きさのマスの{線|せん}です。')+TAIL,
+    qs:qs,ans:ans};
+}
+
+var GENRES=[
+  {id:'tenkai',name:TK,gen:genTenkai},
+  {id:'korogasu',name:'{転|ころ}がす',gen:genKorogasu},
+  {id:'card',name:'カードのまい{数|すう}',gen:genCard}];
+// ジャンルid・レベル(1〜3)から問題を1つ作る
+function makeProblem(id,L){
+  var g=GENRES.filter(function(x){return x.id===id;})[0];
+  for(var i=0;i<3000;i++){var p=g.gen(L);if(p)return p;}
+  return null;
+}
+/*GEN-END*/
+
+// ===== ここから下は画面と印刷 =====
+function R(s){return String(s).replace(/\{([^|{}]+)\|([^{}]+)\}/g,'<ruby>$1<rt>$2</rt></ruby>');}
+function $(id){return document.getElementById(id);}
+var S={genre:'any',level:2,count:1,ans:true};
+try{var sv=JSON.parse(localStorage.getItem('zukeiPrint')||'null');if(sv)for(var kk in S)if(kk in sv)S[kk]=sv[kk];}catch(e){}
+function save(){try{localStorage.setItem('zukeiPrint',JSON.stringify(S));}catch(e){}}
+
+function figRow(fs,cls,side){return '<div class="figs'+(cls||'')+'">'+fs.map(function(f){return '<div class="fg">'+f.svg+(f.cap?'<div class="fc" data-e>'+R(f.cap)+'</div>':'')+'</div>';}).join('')+(side?'<div class="sd"><span class="bl" data-e>'+R(side)+'</span></div>':'')+'</div>';}
+function pageHTML(p,no,many){
+  var h='<div class="page"><div class="sheet"><div class="in"><div class="nm"><span class="no">'+(many?'No.'+no:'')+'</span><span class="nr"><span>'+R('{名前|なまえ}')+'</span><span class="line"></span></span></div>';
+  h+='<p class="lead" data-e>'+R(p.lead)+'</p>';
+  if(p.notes&&p.notes.length)h+='<div class="note"><div class="nt" data-e>【きまり】</div>'+p.notes.map(function(n){return '<div class="ni" data-e>・'+R(n)+'</div>';}).join('')+'</div>';
+  if(p.figs)h+=figRow(p.figs,' top');
+  p.qs.forEach(function(q,i){
+    h+='<div class="q"><div class="qt" data-e>（'+(i+1)+'）'+R(q.t)+(q.a?'　<span class="bl">'+R(q.a)+'</span>':'')+'</div>';
+    if(q.row)h+=figRow(q.row,'',q.side);
+    if(q.figs)h+='<div class="opts fig">'+q.figs.map(function(f){return '<div class="fo"><span data-e>（　）</span>'+f+'</div>';}).join('')+'</div>';
+    h+='</div>';});
+  return h+'</div></div></div>';
+}
+function ansHTML(p,no,many){
+  var h='<div class="page ansp"><div class="sheet"><div class="in"><h2 data-e>'+R('{答|こた}え')+(many?'（No.'+no+'）':'')+'　'+R(p.genre)+'</h2>';
+  p.ans.forEach(function(a,i){h+='<div class="al" data-e>（'+(i+1)+'）<b>'+R(a.a)+'</b>'+(a.w?'<span class="why">'+R(a.w)+'</span>':'')+'</div>'+(a.fig?'<div class="afig" style="padding-left:3em">'+a.fig+'</div>':'');});
+  return h+'</div></div></div>';
+}
+function build(){
+  var order=shuffle(GENRES.map(function(g){return g.id;})),h='',many=S.count>1;
+  for(var i=0;i<S.count;i++){
+    var id=S.genre==='any'?order[i%order.length]:S.genre,p=makeProblem(id,S.level);
+    if(!p){say('{問題|もんだい}がうまく{作|つく}れなかったよ。もう{一度|いちど}おしてみてね。');continue;}
+    h+=pageHTML(p,i+1,many);if(S.ans)h+=ansHTML(p,i+1,many);
+  }
+  $('pages').innerHTML=h;
+  [].forEach.call($('pages').querySelectorAll('[data-e]'),function(e){e.setAttribute('contenteditable','true');});
+  layout();fitAll();
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitAll);
+}
+// 1まいに収める：考えたことを書くための空き（--gap）を広くとり、入りきらないときは少しずつ縮める
+function fitPage(pg){
+  var sh=pg.querySelector('.sheet'),gap=22,lh=2,cp=1.3,nm=7,n=0;
+  function set(){pg.style.setProperty('--gap',gap+'mm');pg.style.setProperty('--lh',lh.toFixed(2));pg.style.setProperty('--cp',cp.toFixed(1)+'mm');pg.style.setProperty('--nm',nm+'mm');}
+  function over(){return sh.firstElementChild.offsetHeight>sh.clientHeight-4;}
+  set();
+  while(over()&&n++<200){if(gap>5)gap-=1;else if(cp>0.7)cp-=0.1;else if(nm>3)nm-=1;else if(gap>1)gap-=0.5;else if(lh>1.65)lh-=0.05;else if(gap>0)gap-=0.5;else break;set();}
+  var w=pg.querySelector('.warn');if(w)w.remove();
+  if(over()){w=document.createElement('div');w.className='warn noprint';w.innerHTML=R('1まいに{入|はい}りきっていないよ。{文|ぶん}を{短|みじか}くするか、{新|あたら}しい{問題|もんだい}を{作|つく}ってみてね。');pg.appendChild(w);}
+}
+function fitAll(){[].forEach.call($('pages').querySelectorAll('.page'),fitPage);layout();}
+function layout(){
+  var pv=$('pv'),sc=$('scaler'),first=$('pages').querySelector('.page');if(!first)return;
+  var pw=first.offsetWidth,avail=pv.clientWidth-16,k=Math.min(1,avail/pw);
+  sc.style.width=pw+'px';sc.style.transform='scale('+k+')';sc.style.marginLeft=Math.max(0,(avail-pw*k)/2)+'px';
+  $('pvh').style.height=(sc.offsetHeight*k)+'px';
+}
+function exportHTML(){
+  var c=$('pages').cloneNode(true);
+  [].forEach.call(c.querySelectorAll('.warn'),function(e){e.remove();});
+  [].forEach.call(c.querySelectorAll('[contenteditable]'),function(e){e.removeAttribute('contenteditable');e.removeAttribute('data-e');});
+  return '<!DOCTYPE html>\n<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=840"><title>立方体とカード プリント</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">'
+    +'<style>'+$('pageCss').textContent+'body{margin:0;background:#ddd}.page{margin:0 auto 6mm}.bar{padding:10px;text-align:center;font-family:\'BIZ UDPGothic\',sans-serif}.bar button{font-family:inherit;font-size:18px;min-height:48px;padding:4px 24px;border-radius:8px;border:2px solid #2f7f99;background:#2f7f99;color:#fff;line-height:1.9}rt{font-size:.5em}</style></head>'
+    +'<body><div class="bar noprint"><button onclick="window.print()">'+R('{印刷|いんさつ}する')+'</button></div>'+c.innerHTML+'</body></html>';
+}
+var msgT=0;
+function say(s){$('msg').innerHTML=R(s);clearTimeout(msgT);msgT=setTimeout(function(){$('msg').innerHTML='';},6000);}
+
+// ---- 設定の部品 ----
+function group(el,opts,key){
+  el.innerHTML='';opts.forEach(function(o){var b=document.createElement('button');b.innerHTML=R(o[1]);if(S[key]===o[0])b.className='on';
+    b.addEventListener('click',function(){S[key]=o[0];save();group(el,opts,key);build();});el.appendChild(b);});
+}
+function stepper(el,key,min,max){
+  el.innerHTML='<button aria-label="へらす">▽</button><input type="number" inputmode="numeric" min="'+min+'" max="'+max+'"><button aria-label="ふやす">△</button>';
+  var inp=el.querySelector('input'),bs=el.querySelectorAll('button');inp.value=S[key];
+  function set(v){v=Math.max(min,Math.min(max,Math.round(v)||min));S[key]=v;inp.value=v;save();build();}
+  bs[0].addEventListener('click',function(){set(S[key]-1);});bs[1].addEventListener('click',function(){set(S[key]+1);});
+  inp.addEventListener('change',function(){set(+inp.value);});
+}
+[].forEach.call(document.querySelectorAll('[data-r]'),function(e){e.innerHTML=R(e.getAttribute('data-r'));});
+group($('gGenre'),[['any','おまかせ']].concat(GENRES.map(function(g){return [g.id,g.name];})),'genre');
+group($('gAns'),[[true,'つける'],[false,'つけない']],'ans');
+stepper($('sLevel'),'level',1,3);stepper($('sCount'),'count',1,10);
+
+// ---- 説明 ----
+function helpHTML(){
+  var h='<h3>'+R('ジャンル（{問題|もんだい}のテーマ）')+'</h3><table>';
+  [['{展開図|てんかいず}','{印|しるし}のついた{展開図|てんかいず}を{見|み}て、{向|む}かい{合|あ}う{面|めん}、{立方体|りっぽうたい}になる{展開図|てんかいず}、{組|く}み{立|た}てた{立方体|りっぽうたい}を{答|こた}えます'],
+   ['{転|ころ}がす','マスの{上|うえ}で{立方体|りっぽうたい}を{矢印|やじるし}のとおりに{転|ころ}がして、ゴールで{上|うえ}になる{面|めん}の{印|しるし}を{答|こた}えます'],
+   ['カードのまい{数|すう}','{同|おな}じ{形|かたち}のカードをならべて{形|かたち}を{作|つく}るとき、{何|なん}まいいるかを{答|こた}えます'],
+   ['おまかせ','まい{数|すう}が2{以上|いじょう}のとき、ジャンルをじゅんばんに{変|か}えて{作|つく}ります']].forEach(function(r){h+='<tr><th>'+R(r[0])+'</th><td>'+R(r[1])+'</td></tr>';});
+  h+='</table><h3>'+R('レベル（むずかしさ）')+'</h3><table><tr><th></th><th>'+R('{展開図|てんかいず}')+'</th><th>'+R('{転|ころ}がす')+'</th><th>'+R('カードのまい{数|すう}')+'</th></tr>';
+  [['1','{面|めん}が4つならんだ{展開図|てんかいず}だけ','1{回|かい}・2{回|かい}・3{回|かい}{転|ころ}がす','{正方形|せいほうけい}・{長方形|ちょうほうけい}・{三角形|さんかくけい}。マスの{線|せん}あり'],
+   ['2','11{種類|しゅるい}の{展開図|てんかいず}すべて','2{回|かい}・3{回|かい}・5{回|かい}。とちゅうで{曲|ま}がる','{長方形|ちょうほうけい}・{三角形|さんかくけい}・L{字|じ}。マスの{線|せん}あり'],
+   ['3','（3）のまちがいに、{面|めん}のならびが{反対|はんたい}{回|まわ}りの{立方体|りっぽうたい}が{入|はい}る','3{回|かい}・5{回|かい}・6〜7{回|かい}。{向|む}かい{合|あ}う{面|めん}は{展開図|てんかいず}から{読|よ}む。（3）は{下|した}の{面|めん}','{形|かたち}が{大|おお}きくなり、マスの{線|せん}がなく{点|てん}だけ']].forEach(function(r){h+='<tr><th>'+r[0]+'</th><td>'+R(r[1])+'</td><td>'+R(r[2])+'</td><td>'+R(r[3])+'</td></tr>';});
+  h+='</table><h3>'+R('つかいかた')+'</h3><p>'+R('・プリントの{文字|もじ}は、タップして{直|なお}せます（{図|ず}と{答|こた}えは{変|か}わりません）。')+'</p><p>'+R('・「{答|こた}え」を「つける」にすると、{問題|もんだい}のあとに{答|こた}えと{考|かんが}え{方|かた}のページが{出|で}ます。カードの{問題|もんだい}は、ならべ{方|かた}の{図|ず}も{出|で}ます。')+'</p><p>'+R('・1{問|もん}は、A4の1まいに{入|はい}ります。{図|ず}に{線|せん}や{印|しるし}をかきこみながら{考|かんが}えられます。')+'</p>';
+  return h;
+}
+$('helpBody').innerHTML=helpHTML();
+$('bHelp').addEventListener('click',function(){$('help').hidden=false;$('helpBody').scrollTop=0;});
+$('bHelpClose').addEventListener('click',function(){$('help').hidden=true;});
+$('help').addEventListener('click',function(e){if(e.target===$('help'))$('help').hidden=true;});
+$('bSet').addEventListener('click',function(){$('panel').classList.toggle('hide');layout();});
+$('bNew').addEventListener('click',function(){build();$('pv').scrollTop=0;});
+$('bPrint').addEventListener('click',function(){
+  var ae=document.activeElement;if(ae&&ae.blur)ae.blur();
+  try{window.print();}catch(e){say('{印刷|いんさつ}できなかったよ。ブラウザで{開|ひら}いてためしてね。');}
+});
+$('bCopy').addEventListener('click',function(){
+  var ta=document.createElement('textarea');ta.value=exportHTML();ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);
+  ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);var ok=false;try{ok=document.execCommand('copy');}catch(e){}
+  var html=ta.value;ta.remove();
+  if(ok){say('HTMLをコピーしたよ。');return;}
+  try{navigator.clipboard.writeText(html).then(function(){say('HTMLをコピーしたよ。');},function(){say('コピーできなかったよ。');});}catch(e){say('コピーできなかったよ。');}
+});
+$('pages').addEventListener('input',function(e){var pg=e.target.closest&&e.target.closest('.page');if(pg){fitPage(pg);layout();}});
+window.addEventListener('resize',layout);
+
+// ---- iPad向け：ズームなどの標準動作を止める ----
+document.addEventListener('gesturestart',function(e){e.preventDefault();});
+document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
+var lastTap=0;
+document.addEventListener('touchend',function(e){
+  var now=Date.now(),t=e.target,free=t.closest&&t.closest('button,input,[contenteditable]');
+  if(!free&&now-lastTap<300)e.preventDefault();lastTap=now;
+},{passive:false});
+build();
+</script>
+</body>
+</html>
