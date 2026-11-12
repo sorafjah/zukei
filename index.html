@@ -36,6 +36,9 @@ svg{touch-action:manipulation}
 .modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 @media (min-width:1000px){.modes{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:520px){.modes{grid-template-columns:minmax(0,1fr)}}
+.pick-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.pick-row .pick-level{margin-bottom:0}
+.pick-use{margin-left:auto}
 .pick-level{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:10px 16px;margin-bottom:16px}
 .seg.big button{min-width:64px;min-height:56px;font-size:24px}
 .num-choice{font-size:42px;font-weight:700;line-height:1.3;padding:10px 0 6px;font-variant-numeric:tabular-nums}
@@ -166,9 +169,15 @@ svg{touch-action:manipulation}
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#566476" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
       </button>
     </header>
-    <div class="pick-level">
-      <span class="set-label">レベル</span>
-      <div id="start-level"></div>
+    <div class="pick-row">
+      <div class="pick-level">
+        <span class="set-label">レベル</span>
+        <div id="start-level"></div>
+      </div>
+      <div class="pick-level pick-use">
+        <span class="set-label" data-r>つかい方{かた}</span>
+        <div id="start-use"></div>
+      </div>
     </div>
     <p class="lead" data-r>やりたい れんしゅうを えらんでね。</p>
     <div class="modes">
@@ -1785,6 +1794,11 @@ function detRows(row, head, det, which) {
   }
 }
 function sumText() { $('#cfg-sum').innerHTML = R(CFG.count + 'もん　・　効果音{こうかおん} ' + (CFG.sound ? 'ON' : 'OFF')); }
+function startUse() {
+  const box = $('#start-use'); box.innerHTML = '';
+  const s = seg([[R('アプリで 見{み}る'), 'app'], ['プリントを つくる', 'print']], 'app', v => { if (v === 'print') { unlockAudio(); openPrint(); } });
+  s.classList.add('big'); box.appendChild(s);
+}
 function startLevel() {
   const box = $('#start-level'); box.innerHTML = '';
   const s = seg([1, 2, 3, 4].map(n => [String(n), n]), CFG.level, v => { setLevel(v); startLevel(); });
@@ -1833,7 +1847,7 @@ function buildSettings() {
 /* ===== はじめ ===== */
 function init() {
   document.querySelectorAll('[data-r]').forEach(el => { el.innerHTML = R(el.innerHTML); });
-  sumText(); startLevel();
+  sumText(); startLevel(); startUse();
   document.querySelectorAll('.mode-card').forEach(b => b.addEventListener('click', () => { unlockAudio(); openMode(b.dataset.mode); }));
   $('#btn-gear').addEventListener('click', () => { unlockAudio(); buildSettings(); $('#settings').hidden = false; });
   $('#settings').addEventListener('click', e => { if (e.target.id === 'settings') closeSettings(); });
